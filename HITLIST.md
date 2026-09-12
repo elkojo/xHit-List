@@ -6,13 +6,89 @@ Top 30 projects worth building, ranked by reward against effort and
 weighted toward breaking closed source, state service monopolies and
 pseudo-monopolies.
 
-`0/30 live` · `rubric v1` · updated 2026-09-12
+`4/30 live` · `rubric v1` · updated 2026-09-12
 
 | # | idea | xhit | target | R | D | E | Dm | M | evidence |
 |---:|---|---:|---|:-:|:-:|:-:|:-:|:-:|---|
+| 1 | **[Per-device telemetry watch for smart TVs and appliances](#lan-telemetry-observatory)** | 5.43 | Smart TV and appliance firmware (LG webOS, Samsung Tizen) <sup>closed source</sup> | 4 | 3 | 3 | 5 | 1 | [2026-09-11](https://lemmy.zip/post/71321781) |
+| 2 | **[Triage your Android apps before Google's sideload cutoff](#play-store-exit-triage)** | 4.00 | Google Play app distribution <sup>pseudo-monopoly</sup> | 3 | 2 | 2 | 4 | 3 | [2026-09-10](https://discuss.privacyguides.net/t/best-android-privacy-friendly-keyboard-after-google-blocks-non-play-store-in-2027/40598) |
+| 3 | **[Escape hatch for SmartThings before the October API fee](#smartthings-exit-exporter)** | 4.00 | Samsung SmartThings cloud <sup>closed source</sup> | 3 | 3 | 2 | 2 | 3 | [2026-09-05](https://community.home-assistant.io/t/leaving-smartthings-before-the-october-api-fees-my-apartment-now-runs-on-an-old-macbook/1024088) |
+| 4 | **[Community server for the last AGPL AppFlowy release](#appflowy-open-server)** | 2.33 | AppFlowy open-core relicensing <sup>closed source</sup> | 3 | 3 | 4 | 2 | 4 | [2026-09-11](https://github.com/AppFlowy-IO/AppFlowy-Cloud) |
 
 <sub>R reward · D disruption · E effort (lower is easier) · Dm demand · M moat risk. See [rubric/SCORING.md](rubric/SCORING.md).</sub>
 
 ---
 
 ## Entries
+
+### lan-telemetry-observatory
+
+**1. Per-device telemetry watch for smart TVs and appliances** — xhit **5.43**
+
+*What:* A passive LAN watcher that attributes every outbound flow to a named device, resolves who it talks to, and publishes a per-model telemetry profile other owners can diff against their own.
+
+*Target:* Smart TV and appliance firmware (LG webOS, Samsung Tizen) (closed source) — The traffic leaves over a network its owner controls. Vendor secrecy ends at the router, and watching it needs no licence, no API key and no permission.
+
+*Why now:* Gamers Nexus put numbers on what everyone suspected and the threads have not stopped since. Blockers like Pi-hole drop a request without ever saying what the device tried to send. Attribution is the missing half, and it runs entirely on hardware the owner already has.
+
+*Scores:* reward 4 · disruption 3 · effort 3 · demand 5 · moat risk 1
+
+*Legal note:* Passive observation of traffic on a network the user owns. Publishing per-model profiles invites vendor complaint but breaks no interface and circumvents no access control.
+
+*Evidence:* [2026-09-11](https://lemmy.zip/post/71321781) · [2026-09-11](https://community.home-assistant.io/t/lg-spying-on-its-customers/1024689) · [2026-09-09](https://lemmy.world/post/51699830) · [2026-09-07](https://lemmy.ml/post/52408726) · [2026-09-07](https://lemmy.world/post/51634894) · [2026-09-07](https://discuss.privacyguides.net/t/lg-smart-tv-investigation-by-gamernexus-highlight-privacy-issues/40519)
+
+<sub>first seen 2026-09-12 · last scored 2026-09-12 · rubric v1</sub>
+
+### play-store-exit-triage
+
+**2. Triage your Android apps before Google's sideload cutoff** — xhit **4.00**
+
+*What:* An on-device inventory that flags which installed apps depend on Play distribution, finds each one's F-Droid, Codeberg or GitHub release channel, and exports an Obtainium import file.
+
+*Target:* Google Play app distribution (pseudo-monopoly) — Developer verification breaks installs Google never previously touched. Users must re-source apps one at a time, and nothing tells them which are at risk.
+
+*Why now:* The rule lands in 2027 and the first casualties are already here: Aurora Store blocked, keyboards going with it. Replacement channels exist. Knowing which of your ninety apps needs one does not, and that inventory is a weekend of work against a documented package manager.
+
+*Scores:* reward 3 · disruption 2 · effort 2 · demand 4 · moat risk 3
+
+*Legal note:* Reads the device's own package list through public Android APIs. Distributes nothing; it points at each app's existing upstream release channel.
+
+*Evidence:* [2026-09-10](https://discuss.privacyguides.net/t/best-android-privacy-friendly-keyboard-after-google-blocks-non-play-store-in-2027/40598) · [2026-09-01](https://lemmy.world/post/51410859) · [2026-08-26](https://lemmy.zip/post/70348981) · [2026-08-19](https://chachara.club/post/1541945)
+
+<sub>first seen 2026-09-12 · last scored 2026-09-12 · rubric v1</sub>
+
+### smartthings-exit-exporter
+
+**3. Escape hatch for SmartThings before the October API fee** — xhit **4.00**
+
+*What:* A one-shot exporter that pulls rooms, devices, scenes and automations from the SmartThings API and writes Home Assistant YAML plus a Zigbee re-pairing plan for the hardware already on the wall.
+
+*Target:* Samsung SmartThings cloud (closed source) — Samsung is moving its own customers' automations behind a monthly fee in October 2026. Every affected household wants its configuration out first.
+
+*Why now:* Samsung set a date and a price for access its customers already had. The destination is mature; the hand work is the blocker — the migration in the cited thread cost days of container debugging and a bug workaround. An exporter turns that into an afternoon, and the deadline supplies the urgency.
+
+*Scores:* reward 3 · disruption 3 · effort 2 · demand 2 · moat risk 3
+
+*Legal note:* Reads the user's own account through Samsung's documented API. After October a user may need one paid month to run the export.
+
+*Evidence:* [2026-09-05](https://community.home-assistant.io/t/leaving-smartthings-before-the-october-api-fees-my-apartment-now-runs-on-an-old-macbook/1024088)
+
+<sub>first seen 2026-09-12 · last scored 2026-09-12 · rubric v1</sub>
+
+### appflowy-open-server
+
+**4. Community server for the last AGPL AppFlowy release** — xhit **2.33**
+
+*What:* A maintained fork of the archived AppFlowy server that keeps the collaboration, auth and storage endpoints working for the open clients, with no seat count and no commercial image in the path.
+
+*Target:* AppFlowy open-core relicensing (closed source) — The final AGPL server commit is public and forkable forever, and thousands of self-hosters are standing on it with nowhere else to go.
+
+*Why now:* On 11 September the self-hostable backend went read-only and self-hosting moved to a commercial image with a one-seat free tier. The clients are still open, the server code is still AGPL, and 584 forks already exist. What is missing is somebody maintaining one.
+
+*Scores:* reward 3 · disruption 3 · effort 4 · demand 2 · moat risk 4
+
+*Legal note:* AGPL-3.0 code, forked at the last licensed commit — permitted in perpetuity. The name and trademark are not; a fork needs its own. Wire compatibility depends on clients the vendor controls and may also close.
+
+*Evidence:* [2026-09-11](https://github.com/AppFlowy-IO/AppFlowy-Cloud)
+
+<sub>first seen 2026-09-12 · last scored 2026-09-12 · rubric v1</sub>

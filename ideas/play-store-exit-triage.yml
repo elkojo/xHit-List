@@ -1,0 +1,49 @@
+slug: play-store-exit-triage
+title: Triage your Android apps before Google's sideload cutoff
+status: live
+pinned: false
+target:
+  kind: pseudo_monopoly
+  name: Google Play app distribution
+  why_vulnerable: 'Developer verification breaks installs Google never previously touched.
+    Users must re-source apps one at a time, and nothing tells them which are at risk.
+
+    '
+what: 'An on-device inventory that flags which installed apps depend on Play distribution,
+  finds each one''s F-Droid, Codeberg or GitHub release channel, and exports an Obtainium
+  import file.
+
+  '
+rationale: 'The rule lands in 2027 and the first casualties are already here: Aurora Store
+  blocked, keyboards going with it. Replacement channels exist. Knowing which of your ninety
+  apps needs one does not, and that inventory is a weekend of work against a documented package
+  manager.
+
+  '
+scores:
+  reward: 3
+  disruption: 2
+  effort: 2
+  demand: 4
+  moat_risk: 3
+evidence:
+- url: https://lemmy.world/post/51410859
+  date: '2026-09-01'
+  note: Play blocks Aurora Store; 474 upvotes, 177 comments
+- url: https://discuss.privacyguides.net/t/best-android-privacy-friendly-keyboard-after-google-blocks-non-play-store-in-2027/40598
+  date: '2026-09-10'
+  note: users already re-sourcing apps ahead of the 2027 cutoff
+- url: https://chachara.club/post/1541945
+  date: '2026-08-19'
+  note: EU citizens' initiative on device neutrality and open attestation
+- url: https://lemmy.zip/post/70348981
+  date: '2026-08-26'
+  note: users unable to remove a vendor-pushed scanning component
+first_seen: '2026-09-12'
+last_scored: '2026-09-12'
+rubric_version: 1
+legal_note: 'Reads the device''s own package list through public Android APIs. Distributes
+  nothing; it points at each app''s existing upstream release channel.
+
+  '
+xhit: 4.0

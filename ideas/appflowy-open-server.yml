@@ -1,0 +1,41 @@
+slug: appflowy-open-server
+title: Community server for the last AGPL AppFlowy release
+status: live
+pinned: false
+target:
+  kind: closed_source
+  name: AppFlowy open-core relicensing
+  why_vulnerable: 'The final AGPL server commit is public and forkable forever, and thousands
+    of self-hosters are standing on it with nowhere else to go.
+
+    '
+what: 'A maintained fork of the archived AppFlowy server that keeps the collaboration, auth
+  and storage endpoints working for the open clients, with no seat count and no commercial
+  image in the path.
+
+  '
+rationale: 'On 11 September the self-hostable backend went read-only and self-hosting moved
+  to a commercial image with a one-seat free tier. The clients are still open, the server
+  code is still AGPL, and 584 forks already exist. What is missing is somebody maintaining
+  one.
+
+  '
+scores:
+  reward: 3
+  disruption: 3
+  effort: 4
+  demand: 2
+  moat_risk: 4
+evidence:
+- url: https://github.com/AppFlowy-IO/AppFlowy-Cloud
+  date: '2026-09-11'
+  note: archived on relicensing; 2003 stars, 584 forks, 114 open issues
+first_seen: '2026-09-12'
+last_scored: '2026-09-12'
+rubric_version: 1
+legal_note: 'AGPL-3.0 code, forked at the last licensed commit — permitted in perpetuity.
+  The name and trademark are not; a fork needs its own. Wire compatibility depends on clients
+  the vendor controls and may also close.
+
+  '
+xhit: 2.33

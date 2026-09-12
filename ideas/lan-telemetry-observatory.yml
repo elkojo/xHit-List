@@ -1,0 +1,55 @@
+slug: lan-telemetry-observatory
+title: Per-device telemetry watch for smart TVs and appliances
+status: live
+pinned: false
+target:
+  kind: closed_source
+  name: Smart TV and appliance firmware (LG webOS, Samsung Tizen)
+  why_vulnerable: 'The traffic leaves over a network its owner controls. Vendor secrecy ends
+    at the router, and watching it needs no licence, no API key and no permission.
+
+    '
+what: 'A passive LAN watcher that attributes every outbound flow to a named device, resolves
+  who it talks to, and publishes a per-model telemetry profile other owners can diff against
+  their own.
+
+  '
+rationale: 'Gamers Nexus put numbers on what everyone suspected and the threads have not stopped
+  since. Blockers like Pi-hole drop a request without ever saying what the device tried to
+  send. Attribution is the missing half, and it runs entirely on hardware the owner already
+  has.
+
+  '
+scores:
+  reward: 4
+  disruption: 3
+  effort: 3
+  demand: 5
+  moat_risk: 1
+evidence:
+- url: https://lemmy.ml/post/52408726
+  date: '2026-09-07'
+  note: 216 million LG TVs; 377 upvotes, 62 comments
+- url: https://lemmy.world/post/51634894
+  date: '2026-09-07'
+  note: TV scanning the LAN while off; 863 upvotes, 164 comments
+- url: https://lemmy.world/post/51699830
+  date: '2026-09-09'
+  note: TV enumerating third-party phones on the network
+- url: https://lemmy.zip/post/71321781
+  date: '2026-09-11'
+  note: owner hand-counting requests because no tool does it
+- url: https://discuss.privacyguides.net/t/lg-smart-tv-investigation-by-gamernexus-highlight-privacy-issues/40519
+  date: '2026-09-07'
+  note: privacy forum thread on the same investigation
+- url: https://community.home-assistant.io/t/lg-spying-on-its-customers/1024689
+  date: '2026-09-11'
+  note: home-automation owners asking what their sets send
+first_seen: '2026-09-12'
+last_scored: '2026-09-12'
+rubric_version: 1
+legal_note: 'Passive observation of traffic on a network the user owns. Publishing per-model
+  profiles invites vendor complaint but breaks no interface and circumvents no access control.
+
+  '
+xhit: 5.43
