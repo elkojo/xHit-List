@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import yaml
@@ -74,12 +74,28 @@ def rubric_version() -> int:
     raise SystemExit("rubric/SCORING.md declares no rubric_version")
 
 
+def iso_dates(node):
+    """YAML parses an unquoted 2026-09-07 into a date object, not a string.
+
+    Every date field in the schema is a string, and score.py quotes them on the
+    way out -- but a hand-written idea file will not, and the failure was an
+    opaque TypeError three functions later. Normalise on the way in instead.
+    """
+    if isinstance(node, dict):
+        return {k: iso_dates(v) for k, v in node.items()}
+    if isinstance(node, list):
+        return [iso_dates(v) for v in node]
+    if isinstance(node, (date, datetime)):
+        return node.isoformat()[:10]
+    return node
+
+
 def load_ideas() -> list[dict]:
     ideas = []
     for path in sorted(IDEAS.glob("*.yml")):
         if path.name.startswith("_"):
             continue  # _EXAMPLE.yml and friends are documentation, not data
-        data = yaml.safe_load(path.read_text())
+        data = iso_dates(yaml.safe_load(path.read_text()))
         if not isinstance(data, dict):
             raise SystemExit(f"{path.name}: not a YAML mapping")
         if data.get("slug") != path.stem:

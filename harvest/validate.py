@@ -18,6 +18,7 @@ import difflib
 import json
 import subprocess
 import sys
+from datetime import date, datetime
 from pathlib import Path
 
 import yaml
@@ -38,6 +39,17 @@ errors: list[str] = []
 warnings: list[str] = []
 
 
+def iso_dates(node):
+    """Match render.py: an unquoted YAML date is a date object, not a string."""
+    if isinstance(node, dict):
+        return {k: iso_dates(v) for k, v in node.items()}
+    if isinstance(node, list):
+        return [iso_dates(v) for v in node]
+    if isinstance(node, (date, datetime)):
+        return node.isoformat()[:10]
+    return node
+
+
 def main() -> int:
     validator = Draft7Validator(json.loads(SCHEMA.read_text()))
     ideas = []
@@ -46,7 +58,7 @@ def main() -> int:
         if path.name.startswith("_"):
             continue
         try:
-            data = yaml.safe_load(path.read_text())
+            data = iso_dates(yaml.safe_load(path.read_text()))
         except yaml.YAMLError as exc:
             errors.append(f"{path.name}: invalid YAML — {exc}")
             continue
