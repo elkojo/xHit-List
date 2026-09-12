@@ -7,152 +7,269 @@
 # Adding a source: append an entry using an existing collector. Adding a *new*
 # collector means a PR (it changes a script). Keep collectors dumb — no judgment
 # in this file or in harvest.py, only fetching.
+#
+# Every source here was probed live before being added: it answers without an API
+# key, without an account, and its terms permit programmatic reads. A source that
+# starts failing shows up as `0 new` — check the `!` warnings before assuming the
+# world simply went quiet.
 
 defaults:
-  window_days: 7
+  window_days: 14
   user_agent: "xhit-list-harvester/1 (+https://github.com/elkojo/xHit-List)"
 
 sources:
 
   # ---------------------------------------------------------------- pain signals
   # People stating a dependency hurts. The bread and butter.
+  #
+  # HN queries are single-concept on purpose. Algolia ANDs every word, so
+  # "API shutting down deprecated" matches stories containing all three — which is
+  # almost none. One concept per source, and let the batch do the breadth.
 
   - id: hn-open-alternative
     collector: hn_algolia
     group: pain
     query: "open source alternative"
-    min_points: 20
+    min_points: 15
 
-  - id: hn-selfhost
+  - id: hn-selfhosted
     collector: hn_algolia
     group: pain
     query: "self-hosted"
-    min_points: 20
-
-  - id: hn-ask-what-to-build
-    collector: hn_algolia
-    group: pain
-    query: "Ask HN what should I build"
     min_points: 15
 
-  - id: reddit-selfhosted
-    collector: reddit
+  - id: hn-ask-hn
+    collector: hn_algolia
     group: pain
-    subreddit: selfhosted
-    listing: top
-    period: week
-    min_score: 100
-
-  - id: reddit-degoogle
-    collector: reddit
-    group: pain
-    subreddit: degoogle
-    listing: top
-    period: month
-    min_score: 80
-
-  - id: reddit-opensource
-    collector: reddit
-    group: pain
-    subreddit: opensource
-    listing: top
-    period: week
-    min_score: 60
-
-  - id: reddit-datahoarder
-    collector: reddit
-    group: pain
-    subreddit: DataHoarder
-    listing: top
-    period: week
-    min_score: 150
-
-  - id: reddit-sysadmin
-    collector: reddit
-    group: pain
-    subreddit: sysadmin
-    listing: top
-    period: week
-    min_score: 200
+    tags: ask_hn
+    query: ""
+    min_points: 60
 
   - id: lobsters-hottest
     collector: lobsters
     group: pain
     min_score: 15
 
+  # Lemmy replaces the reddit sources, which now 403 for every unauthenticated
+  # client. The communities that carried this signal on reddit migrated here and
+  # the API needs no key. Note which instance hosts which community: !selfhosted
+  # is on lemmy.world, !opensource and !degoogle are on lemmy.ml.
+
+  - id: lemmy-selfhosted
+    collector: lemmy
+    group: pain
+    instance: lemmy.world
+    community: selfhosted
+    sort: TopWeek
+    min_score: 60
+
+  - id: lemmy-technology
+    collector: lemmy
+    group: pain
+    instance: lemmy.world
+    community: technology
+    sort: TopWeek
+    min_score: 300
+
+  - id: lemmy-opensource
+    collector: lemmy
+    group: pain
+    instance: lemmy.ml
+    community: opensource
+    sort: TopMonth
+    min_score: 60
+
+  - id: lemmy-degoogle
+    collector: lemmy
+    group: pain
+    instance: lemmy.ml
+    community: degoogle
+    sort: TopMonth
+    min_score: 40
+
+  - id: lemmy-privacy
+    collector: lemmy
+    group: pain
+    instance: lemmy.ml
+    community: privacy
+    sort: TopMonth
+    min_score: 60
+
+  - id: lemmy-linux
+    collector: lemmy
+    group: pain
+    instance: lemmy.ml
+    community: linux
+    sort: TopWeek
+    min_score: 100
+
+  # Discourse forums. Every install exposes /top.json, so one collector covers all
+  # of them and adding a community costs one entry. These are where people describe
+  # a dependency failing them in detail, at length, with the device in front of them.
+
+  - id: discourse-privacyguides
+    collector: discourse
+    group: pain
+    host: discuss.privacyguides.net
+    period: monthly
+    min_likes: 10
+
+  - id: discourse-home-assistant
+    collector: discourse
+    group: pain
+    host: community.home-assistant.io
+    period: weekly
+    min_likes: 10
+
+  - id: discourse-fdroid
+    collector: discourse
+    group: pain
+    host: forum.f-droid.org
+    period: monthly
+    min_likes: 5
+
+  - id: discourse-openwrt
+    collector: discourse
+    group: pain
+    host: forum.openwrt.org
+    period: weekly
+    min_likes: 10
+
+  - id: discourse-framework
+    collector: discourse
+    group: pain
+    host: community.frame.work
+    period: monthly
+    min_likes: 15
+
+  # Stack Exchange. The densest source in this file: softwarerecs is nothing but
+  # people describing a tool they need, and an *unanswered* softwarerecs question
+  # is the purest form of the signal this list exists to catch — a stated need with
+  # no product behind it. Keyless quota is 300 req/day; a harvest uses four.
+
+  - id: se-softwarerecs-unanswered
+    collector: stackexchange
+    group: pain
+    site: softwarerecs
+    unanswered: true
+    sort: votes
+    min_score: 3
+
+  - id: se-softwarerecs-recent
+    collector: stackexchange
+    group: pain
+    site: softwarerecs
+    sort: creation
+    min_score: 0
+
   # ------------------------------------------------------- enshittification signals
   # An incumbent closing a door. Highest-yield group: the window opens the same week.
 
-  - id: hn-api-shutdown
+  - id: hn-shutting-down
     collector: hn_algolia
     group: enshittification
-    query: "API shutting down deprecated"
+    query: "shutting down"
     min_points: 30
+
+  - id: hn-deprecated-api
+    collector: hn_algolia
+    group: enshittification
+    query: "deprecating API"
+    min_points: 20
 
   - id: hn-price-increase
     collector: hn_algolia
     group: enshittification
-    query: "price increase pricing change"
-    min_points: 40
-
-  - id: hn-license-change
-    collector: hn_algolia
-    group: enshittification
-    query: "license change relicensing BSL"
-    min_points: 30
-
-  - id: hn-rate-limit
-    collector: hn_algolia
-    group: enshittification
-    query: "rate limit free tier removed"
+    query: "price increase"
     min_points: 25
 
-  - id: hn-acquisition-shutdown
+  - id: hn-relicensing
     collector: hn_algolia
     group: enshittification
-    query: "acquired shutting down service"
-    min_points: 40
+    query: "license change"
+    min_points: 20
+
+  - id: hn-enshittification
+    collector: hn_algolia
+    group: enshittification
+    query: "enshittification"
+    min_points: 15
+
+  # A shutdown announced by the incumbent itself, with a date attached. No forum
+  # thread required and no engagement metric exists — score.py's round-robin is
+  # what keeps these from sorting last behind a 60,000-star corpse.
+
+  - id: killed-by-google
+    collector: killedbygoogle
+    group: enshittification
+    closed_within_days: 540
 
   # ------------------------------------------------------------- mandate signals
   # Regulation that requires an interface nobody has built an open client for.
   # Structurally the best disruption opportunities: the incumbent cannot legally
   # close the door it was ordered to open.
 
-  - id: hn-interoperability-regulation
+  - id: eu-digital-strategy
+    collector: rss
+    group: mandate
+    url: https://digital-strategy.ec.europa.eu/en/rss.xml
+    window_days: 45
+
+  - id: hn-interoperability
     collector: hn_algolia
     group: mandate
-    query: "interoperability regulation mandate"
+    query: "interoperability"
     min_points: 20
+    window_days: 90
 
   - id: hn-digital-sovereignty
     collector: hn_algolia
     group: mandate
-    query: "digital sovereignty public sector open source"
-    min_points: 20
+    query: "digital sovereignty"
+    min_points: 15
+    window_days: 90
 
-  - id: hn-open-data-portal
+  - id: hn-right-to-repair
     collector: hn_algolia
     group: mandate
-    query: "open data government portal"
-    min_points: 15
+    query: "right to repair"
+    min_points: 40
+    window_days: 90
+
+  - id: hn-antitrust
+    collector: hn_algolia
+    group: mandate
+    query: "antitrust"
+    min_points: 25
+    window_days: 90
 
   # ------------------------------------------------------------- vacancy signals
   # A solved problem whose solution died. Proven demand, vacant seat.
+  #
+  # These queries are sorted by `updated`, not by stars, and windowed. Sorting a
+  # static corpus by stars returns the same forty famous corpses every run until
+  # the heat death of the universe; atom/atom is not news twice.
 
-  - id: gh-archived-popular
+  - id: gh-newly-archived
     collector: github_search
     group: vacancy
-    query: "archived:true stars:>1500 pushed:<2024-01-01"
-    sort: stars
+    query: "archived:true stars:>800 pushed:>2025-06-01"
+    sort: updated
 
-  - id: gh-stale-popular
+  - id: gh-stale-selfhosted
     collector: github_search
     group: vacancy
-    query: "stars:>2000 pushed:<2024-06-01 topic:self-hosted"
-    sort: stars
+    query: "stars:>1200 topic:self-hosted pushed:2024-01-01..2025-03-01"
+    sort: updated
+
+  - id: gh-stale-alternative
+    collector: github_search
+    group: vacancy
+    query: "topic:alternative stars:>400 pushed:2024-01-01..2025-06-01"
+    sort: updated
 
   - id: gh-fast-rising-foss
     collector: github_search
     group: vacancy
-    query: "topic:alternative stars:>200 created:>2025-09-01"
+    query: "topic:alternative stars:>150 created:>2026-03-01"
     sort: stars
