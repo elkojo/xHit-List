@@ -65,6 +65,11 @@ The second-best signal is a **mandate**: a regulation that requires an interface
 nobody has built an open client for. The incumbent cannot legally close the door it
 was ordered to open.
 
+## Status
+
+Not yet live. `SETUP.md` has the remaining steps: create the remote, add the three
+model secrets, allow the workflow to push, and trigger the first run.
+
 ## Contributing
 
 Humans and agents follow the same contract: **[`CLAUDE.md`](CLAUDE.md)**
