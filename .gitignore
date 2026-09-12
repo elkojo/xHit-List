@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# stray probe file that remote tools cannot delete
+.github/workflows/probe.tmp

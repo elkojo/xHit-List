@@ -1,0 +1,158 @@
+# Where candidates come from.
+#
+# Each source has a `collector` (implemented in harvest.py) and its own params.
+# Sources are grouped by signal type. The `enshittification` and `mandate` groups
+# are the highest-yield ones — see CLAUDE.md §10. Weight your attention there.
+#
+# Adding a source: append an entry using an existing collector. Adding a *new*
+# collector means a PR (it changes a script). Keep collectors dumb — no judgment
+# in this file or in harvest.py, only fetching.
+
+defaults:
+  window_days: 7
+  user_agent: "xhit-list-harvester/1 (+https://github.com/elkojo/xHit-List)"
+
+sources:
+
+  # ---------------------------------------------------------------- pain signals
+  # People stating a dependency hurts. The bread and butter.
+
+  - id: hn-open-alternative
+    collector: hn_algolia
+    group: pain
+    query: "open source alternative"
+    min_points: 20
+
+  - id: hn-selfhost
+    collector: hn_algolia
+    group: pain
+    query: "self-hosted"
+    min_points: 20
+
+  - id: hn-ask-what-to-build
+    collector: hn_algolia
+    group: pain
+    query: "Ask HN what should I build"
+    min_points: 15
+
+  - id: reddit-selfhosted
+    collector: reddit
+    group: pain
+    subreddit: selfhosted
+    listing: top
+    period: week
+    min_score: 100
+
+  - id: reddit-degoogle
+    collector: reddit
+    group: pain
+    subreddit: degoogle
+    listing: top
+    period: month
+    min_score: 80
+
+  - id: reddit-opensource
+    collector: reddit
+    group: pain
+    subreddit: opensource
+    listing: top
+    period: week
+    min_score: 60
+
+  - id: reddit-datahoarder
+    collector: reddit
+    group: pain
+    subreddit: DataHoarder
+    listing: top
+    period: week
+    min_score: 150
+
+  - id: reddit-sysadmin
+    collector: reddit
+    group: pain
+    subreddit: sysadmin
+    listing: top
+    period: week
+    min_score: 200
+
+  - id: lobsters-hottest
+    collector: lobsters
+    group: pain
+    min_score: 15
+
+  # ------------------------------------------------------- enshittification signals
+  # An incumbent closing a door. Highest-yield group: the window opens the same week.
+
+  - id: hn-api-shutdown
+    collector: hn_algolia
+    group: enshittification
+    query: "API shutting down deprecated"
+    min_points: 30
+
+  - id: hn-price-increase
+    collector: hn_algolia
+    group: enshittification
+    query: "price increase pricing change"
+    min_points: 40
+
+  - id: hn-license-change
+    collector: hn_algolia
+    group: enshittification
+    query: "license change relicensing BSL"
+    min_points: 30
+
+  - id: hn-rate-limit
+    collector: hn_algolia
+    group: enshittification
+    query: "rate limit free tier removed"
+    min_points: 25
+
+  - id: hn-acquisition-shutdown
+    collector: hn_algolia
+    group: enshittification
+    query: "acquired shutting down service"
+    min_points: 40
+
+  # ------------------------------------------------------------- mandate signals
+  # Regulation that requires an interface nobody has built an open client for.
+  # Structurally the best disruption opportunities: the incumbent cannot legally
+  # close the door it was ordered to open.
+
+  - id: hn-interoperability-regulation
+    collector: hn_algolia
+    group: mandate
+    query: "interoperability regulation mandate"
+    min_points: 20
+
+  - id: hn-digital-sovereignty
+    collector: hn_algolia
+    group: mandate
+    query: "digital sovereignty public sector open source"
+    min_points: 20
+
+  - id: hn-open-data-portal
+    collector: hn_algolia
+    group: mandate
+    query: "open data government portal"
+    min_points: 15
+
+  # ------------------------------------------------------------- vacancy signals
+  # A solved problem whose solution died. Proven demand, vacant seat.
+
+  - id: gh-archived-popular
+    collector: github_search
+    group: vacancy
+    query: "archived:true stars:>1500 pushed:<2024-01-01"
+    sort: stars
+
+  - id: gh-stale-popular
+    collector: github_search
+    group: vacancy
+    query: "stars:>2000 pushed:<2024-06-01 topic:self-hosted"
+    sort: stars
+
+  - id: gh-fast-rising-foss
+    collector: github_search
+    group: vacancy
+    query: "topic:alternative stars:>200 created:>2025-09-01"
+    sort: stars

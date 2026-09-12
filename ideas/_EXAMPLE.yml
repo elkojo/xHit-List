@@ -1,0 +1,58 @@
+# Reference format. Files beginning with "_" are documentation and are ignored by
+# render.py, score.py and validate.py. Copy the shape, not the content — the
+# evidence URLs below are placeholders and would be rejected by score.py's
+# citation check.
+#
+# Field rules live in CLAUDE.md §4; scale definitions in rubric/SCORING.md.
+
+slug: example-open-client-for-mandated-api
+title: Open client for a mandated-but-closed government API
+status: live                    # live | graveyard | building | shipped
+pinned: false                   # humans only — pinned entries are never evicted
+
+target:
+  kind: state_service           # closed_source | state_service | pseudo_monopoly
+  name: National e-filing portal
+  why_vulnerable: >
+    Regulation obliges the portal to expose the interface, but every shipped
+    client is a national contractor build.
+
+what: >
+  A cross-platform client that speaks the mandated protocol, keeps credentials on
+  the user's own device, and never routes a request through a vendor server.
+
+rationale: >
+  The interoperability obligation is already in force and nobody has built an open
+  client. First credible implementation becomes the de facto reference, which is a
+  position no incumbent can price you out of.
+
+scores:
+  reward: 5                     # value if it exists and works
+  disruption: 5                 # how hard it hits the incumbent (0 = reject)
+  effort: 3                     # one dev + AI agents, part-time. 1 = a weekend
+  demand: 3                     # evidenced only, never assumed
+  moat_risk: 1                  # 0 = nobody can switch it off
+
+# xhit is computed by render.py — never write it by hand.
+# (2*5 + 2*5 + 3) / (3 + 0.5) = 6.57
+
+evidence:
+  - url: https://example.org/some-thread
+    date: 2026-09-04
+    note: 200-comment thread asking for exactly this
+  - url: https://example.org/regulation-text
+    date: 2026-06-01
+    note: interface obligation, article 12
+
+first_seen: 2026-09-12          # set once, never changed
+last_scored: 2026-09-12         # set by score.py
+rubric_version: 1               # from rubric/SCORING.md
+
+# Only when status is building or shipped:
+repo: null
+
+# Informational, never scored. Disrupting state services and monopolies carries
+# real regulatory exposure — record it plainly so a human can judge it.
+legal_note: >
+  Client-side only; does not redistribute portal data. Check whether the terms of
+  use restrict non-official clients before publishing binaries.

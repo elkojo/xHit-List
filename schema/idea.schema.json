@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "xHit-List idea",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slug",
+    "title",
+    "status",
+    "target",
+    "what",
+    "rationale",
+    "scores",
+    "evidence",
+    "first_seen",
+    "last_scored",
+    "rubric_version"
+  ],
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 60,
+      "description": "Must equal the filename without .yml"
+    },
+    "title": { "type": "string", "minLength": 8, "maxLength": 70 },
+    "status": {
+      "type": "string",
+      "enum": ["live", "graveyard", "building", "shipped"]
+    },
+    "pinned": { "type": "boolean", "default": false },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "why_vulnerable"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["closed_source", "state_service", "pseudo_monopoly"]
+        },
+        "name": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "why_vulnerable": { "type": "string", "minLength": 10, "maxLength": 260 }
+      }
+    },
+    "what": { "type": "string", "minLength": 20, "maxLength": 340 },
+    "rationale": { "type": "string", "minLength": 20, "maxLength": 500 },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reward", "disruption", "effort", "demand", "moat_risk"],
+      "properties": {
+        "reward": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "disruption": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "effort": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "demand": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "moat_risk": { "type": "integer", "minimum": 0, "maximum": 5 }
+      }
+    },
+    "xhit": { "type": "number", "description": "Computed by render.py" },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url", "date"],
+        "properties": {
+          "url": { "type": "string", "pattern": "^https?://" },
+          "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+          "note": { "type": "string", "maxLength": 140 }
+        }
+      }
+    },
+    "first_seen": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "last_scored": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "rubric_version": { "type": "integer", "minimum": 1 },
+    "evicted_on": { "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "evicted_reason": { "type": ["string", "null"], "maxLength": 200 },
+    "repo": { "type": ["string", "null"] },
+    "legal_note": { "type": ["string", "null"], "maxLength": 400 }
+  }
+}
