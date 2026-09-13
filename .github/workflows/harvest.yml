@@ -47,7 +47,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 harvest/harvest.py
 
+      # Only runs when an endpoint is configured. The scoring pass is normally
+      # done by the agent connected to the repo -- see CLAUDE.md section 8 -- and
+      # without this guard a repo with no MODEL_* secrets fails here every night,
+      # taking the whole harvest down with it: the commit step never runs and the
+      # candidates the job just fetched are thrown away with the runner.
       - name: Triage and score
+        if: env.MODEL_BASE_URL != ''
         env:
           MODEL_BASE_URL: ${{ secrets.MODEL_BASE_URL }}
           MODEL_NAME: ${{ secrets.MODEL_NAME }}
@@ -75,6 +81,15 @@ jobs:
           fi
           added=$(git diff --cached --name-only --diff-filter=A -- ideas | wc -l)
           changed=$(git diff --cached --name-only --diff-filter=M -- ideas | wc -l)
-          git commit -m "harvest: +${added} ideas, ${changed} updated" \
-                     -m "Automated run. See HITLIST.md for the current ranking."
+          # A harvest-only night touches no idea file. Saying "+0 ideas" reads like
+          # a failure, so say what actually happened instead.
+          if [ "${added}" -eq 0 ] && [ "${changed}" -eq 0 ]; then
+            candidates=$(git diff --cached --numstat -- candidates | awk '{s+=$1} END {print s+0}')
+            subject="harvest: ${candidates} candidates, not yet triaged"
+            body="Automated run. Scoring is the connected agent's pass; see CLAUDE.md section 8."
+          else
+            subject="harvest: +${added} ideas, ${changed} updated"
+            body="Automated run. See HITLIST.md for the current ranking."
+          fi
+          git commit -m "${subject}" -m "${body}"
           git push

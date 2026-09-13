@@ -32,11 +32,11 @@ It is a PR and not a merge to `main` because it changes `harvest.py`, `score.py`
 `HITLIST.md` is seeded with 4 live entries. The pipeline is green end to end
 (`validate.py` exits 0).
 
-**Open question, answered but not yet written into the contract.** The scoring pass
-is to be done by the agent connected to the repo, not by `score.py` calling an
-endpoint. CLAUDE.md §8 and `.github/workflows/harvest.yml` still assume the
-endpoint, so the nightly cron will fail at `score.py` until one of the two is
-changed. Decide which is primary, then open a PR against §8 and the workflow.
+**Settled 2026-09-13.** The scoring pass is the connected agent's, not `score.py`
+calling an endpoint. CLAUDE.md §8 now says so and names the endpoint as optional
+automation; the workflow skips the score step unless `MODEL_BASE_URL` is set. A
+harvest-only night commits candidates, `SOURCES.md` and health, and says so in the
+commit subject instead of reporting "+0 ideas".
 
 ---
 
@@ -50,9 +50,12 @@ authenticated as `elkojo`.
 - [x] `harvest/live-sources` pushed and [PR #1](https://github.com/elkojo/xHit-List/pull/1) opened
 - [ ] PR #1 reviewed and merged
 
-## 2. Add the model secrets
+## 2. Add the model secrets — OPTIONAL
 
-Only needed if `score.py` stays a scoring route — see the open question in §0.
+Not needed. The scoring pass is the connected agent's (CLAUDE.md §8, route 1) and
+the nightly workflow skips `score.py` entirely when `MODEL_BASE_URL` is unset.
+
+Set these only if you want the cron to triage unattended as well:
 
 **Settings → Secrets and variables → Actions → New repository secret.** Three of
 them, matching `CLAUDE.md` §8:
@@ -67,7 +70,7 @@ OpenRouter is the pragmatic choice if you want both Hermes and Claude reachable
 through one key. A local llama.cpp also works, but not from a GitHub runner — for
 that, run `score.py` on poppy against `http://localhost:8080/v1` and push the result.
 
-- [ ] decided whether the endpoint is a route at all
+- [x] decided: optional second route, agent is primary (2026-09-13)
 - [ ] `MODEL_BASE_URL`
 - [ ] `MODEL_NAME`
 - [ ] `MODEL_API_KEY`
@@ -78,10 +81,7 @@ that, run `score.py` on poppy against `http://localhost:8080/v1` and push the re
 permissions.** Without this the daily job runs, finds ideas, and then fails at
 `git push` — which looks like a mysterious harvest failure.
 
-- [ ] workflow permissions set to read and write
-
-This is now the **next blocker**: the cron is live at 05:17 UTC and the job will
-reach `git push` on its first successful run.
+- [x] workflow permissions set to read and write (2026-09-13, via the API)
 
 ## 4. First run
 
