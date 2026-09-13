@@ -216,8 +216,24 @@ python3 harvest/validate.py                # schema + drift check; exits non-zer
 `harvest.py` and `render.py` use no model and must stay that way — keeping judgment
 in exactly one place is what makes the list auditable.
 
-**The model is pluggable.** `score.py` talks to any OpenAI-compatible
-`/chat/completions` endpoint:
+**Who does the scoring.** There are two routes, and the first is primary:
+
+1. **The connected agent.** An agent working in this repo does the triage and
+   scoring pass itself, following `rubric/SCORING.md` and writing `ideas/*.yml`
+   directly. This is the default. It is also the better judgment: an agent reading
+   the whole contract and the existing list beats a twelve-candidate batch prompt,
+   and it costs nothing.
+2. **`score.py` against an endpoint.** Automation for when nobody is driving. It
+   runs only if `MODEL_BASE_URL` is set — the nightly workflow skips the step
+   otherwise, so a repo with no model configured still harvests, renders, validates
+   and commits rather than failing and discarding the night's candidates.
+
+Either way the rules are the same ones: the rubric, the evidence standard (§10),
+the cap, and score stickiness (§7). An agent doing the pass by hand is not licensed
+to be looser than `score.py` would have been — it is expected to be stricter.
+
+**The model is pluggable.** When route 2 is used, `score.py` talks to any
+OpenAI-compatible `/chat/completions` endpoint:
 
 ```bash
 MODEL_BASE_URL=https://api.openai.com/v1        MODEL_NAME=...        MODEL_API_KEY=...
