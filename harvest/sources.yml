@@ -1,4 +1,7 @@
-# Where candidates come from.
+# Where candidates come from. Source of truth for SOURCES.md.
+#
+# SOURCES.md is GENERATED from this file — never hand-edit it. Add or retire a
+# source here, then run `python3 harvest/render.py`.
 #
 # Each source has a `collector` (implemented in harvest.py) and its own params.
 # Sources are grouped by signal type. The `enshittification` and `mandate` groups
@@ -7,152 +10,970 @@
 # Adding a source: append an entry using an existing collector. Adding a *new*
 # collector means a PR (it changes a script). Keep collectors dumb — no judgment
 # in this file or in harvest.py, only fetching.
+#
+# The list is capped at `max_sources`. Past the cap, a new source has to displace
+# a worse one — move the loser to `retired:` at the bottom with a reason and a
+# date. Retired entries are never fetched; they stay so that nobody re-adds a
+# source that was already tried and found wanting.
+#
+# Every source here was probed live before being added: it answers without an API
+# key, without an account, and its terms permit programmatic reads. Per-source
+# health is recorded by harvest.py in source_health.json and shown in SOURCES.md.
+# A source with a long failing or dry streak is a candidate for retirement.
 
 defaults:
-  window_days: 7
+  window_days: 14
   user_agent: "xhit-list-harvester/1 (+https://github.com/elkojo/xHit-List)"
+  max_sources: 100
 
 sources:
 
   # ---------------------------------------------------------------- pain signals
   # People stating a dependency hurts. The bread and butter.
+  #
+  # HN queries are single-concept on purpose. Algolia ANDs every word, so
+  # "API shutting down deprecated" matches stories containing all three — which is
+  # almost none. One concept per source, and let the batch do the breadth.
 
   - id: hn-open-alternative
+    added: 2026-09-12
     collector: hn_algolia
     group: pain
     query: "open source alternative"
-    min_points: 20
+    min_points: 15
 
-  - id: hn-selfhost
+  - id: hn-selfhosted
+    added: 2026-09-12
     collector: hn_algolia
     group: pain
     query: "self-hosted"
-    min_points: 20
-
-  - id: hn-ask-what-to-build
-    collector: hn_algolia
-    group: pain
-    query: "Ask HN what should I build"
     min_points: 15
 
-  - id: reddit-selfhosted
-    collector: reddit
+  - id: hn-ask-hn
+    added: 2026-09-12
+    collector: hn_algolia
     group: pain
-    subreddit: selfhosted
-    listing: top
-    period: week
-    min_score: 100
-
-  - id: reddit-degoogle
-    collector: reddit
-    group: pain
-    subreddit: degoogle
-    listing: top
-    period: month
-    min_score: 80
-
-  - id: reddit-opensource
-    collector: reddit
-    group: pain
-    subreddit: opensource
-    listing: top
-    period: week
-    min_score: 60
-
-  - id: reddit-datahoarder
-    collector: reddit
-    group: pain
-    subreddit: DataHoarder
-    listing: top
-    period: week
-    min_score: 150
-
-  - id: reddit-sysadmin
-    collector: reddit
-    group: pain
-    subreddit: sysadmin
-    listing: top
-    period: week
-    min_score: 200
+    tags: ask_hn
+    query: ""
+    min_points: 60
 
   - id: lobsters-hottest
+    added: 2026-09-12
     collector: lobsters
     group: pain
     min_score: 15
 
+  # Lemmy replaces the reddit sources, which now 403 for every unauthenticated
+  # client. The communities that carried this signal on reddit migrated here and
+  # the API needs no key. Note which instance hosts which community: !selfhosted
+  # is on lemmy.world, !opensource and !degoogle are on lemmy.ml.
+
+  - id: lemmy-selfhosted
+    added: 2026-09-12
+    collector: lemmy
+    group: pain
+    instance: lemmy.world
+    community: selfhosted
+    sort: TopWeek
+    min_score: 60
+
+  - id: lemmy-technology
+    added: 2026-09-12
+    collector: lemmy
+    group: pain
+    instance: lemmy.world
+    community: technology
+    sort: TopWeek
+    min_score: 300
+
+  - id: lemmy-opensource
+    added: 2026-09-12
+    collector: lemmy
+    group: pain
+    instance: lemmy.ml
+    community: opensource
+    sort: TopMonth
+    min_score: 60
+
+  - id: lemmy-degoogle
+    added: 2026-09-12
+    collector: lemmy
+    group: pain
+    instance: lemmy.ml
+    community: degoogle
+    sort: TopMonth
+    min_score: 40
+
+  - id: lemmy-privacy
+    added: 2026-09-12
+    collector: lemmy
+    group: pain
+    instance: lemmy.ml
+    community: privacy
+    sort: TopMonth
+    min_score: 60
+
+  - id: lemmy-linux
+    added: 2026-09-12
+    collector: lemmy
+    group: pain
+    instance: lemmy.ml
+    community: linux
+    sort: TopWeek
+    min_score: 100
+
+  # Discourse forums. Every install exposes /top.json, so one collector covers all
+  # of them and adding a community costs one entry. These are where people describe
+  # a dependency failing them in detail, at length, with the device in front of them.
+
+  - id: discourse-privacyguides
+    added: 2026-09-12
+    collector: discourse
+    group: pain
+    host: discuss.privacyguides.net
+    period: monthly
+    min_likes: 10
+
+  - id: discourse-home-assistant
+    added: 2026-09-12
+    collector: discourse
+    group: pain
+    host: community.home-assistant.io
+    period: weekly
+    min_likes: 10
+
+  - id: discourse-fdroid
+    added: 2026-09-12
+    collector: discourse
+    group: pain
+    host: forum.f-droid.org
+    period: monthly
+    min_likes: 5
+
+  - id: discourse-openwrt
+    added: 2026-09-12
+    collector: discourse
+    group: pain
+    host: forum.openwrt.org
+    period: weekly
+    min_likes: 10
+
+  - id: discourse-framework
+    added: 2026-09-12
+    collector: discourse
+    group: pain
+    host: community.frame.work
+    period: monthly
+    min_likes: 15
+
+  # Stack Exchange. The densest source in this file: softwarerecs is nothing but
+  # people describing a tool they need, and an *unanswered* softwarerecs question
+  # is the purest form of the signal this list exists to catch — a stated need with
+  # no product behind it. Keyless quota is 300 req/day; a harvest uses four.
+
+  - id: se-softwarerecs-unanswered
+    added: 2026-09-12
+    collector: stackexchange
+    group: pain
+    site: softwarerecs
+    unanswered: true
+    sort: votes
+    min_score: 3
+
+  - id: se-softwarerecs-recent
+    added: 2026-09-12
+    collector: stackexchange
+    group: pain
+    site: softwarerecs
+    sort: creation
+    min_score: 0
+
   # ------------------------------------------------------- enshittification signals
   # An incumbent closing a door. Highest-yield group: the window opens the same week.
 
-  - id: hn-api-shutdown
+  - id: hn-shutting-down
+    added: 2026-09-12
     collector: hn_algolia
     group: enshittification
-    query: "API shutting down deprecated"
+    query: "shutting down"
     min_points: 30
+
+  - id: hn-deprecated-api
+    added: 2026-09-12
+    collector: hn_algolia
+    group: enshittification
+    query: "deprecating API"
+    min_points: 20
 
   - id: hn-price-increase
+    added: 2026-09-12
     collector: hn_algolia
     group: enshittification
-    query: "price increase pricing change"
-    min_points: 40
-
-  - id: hn-license-change
-    collector: hn_algolia
-    group: enshittification
-    query: "license change relicensing BSL"
-    min_points: 30
-
-  - id: hn-rate-limit
-    collector: hn_algolia
-    group: enshittification
-    query: "rate limit free tier removed"
+    query: "price increase"
     min_points: 25
 
-  - id: hn-acquisition-shutdown
+  - id: hn-relicensing
+    added: 2026-09-12
     collector: hn_algolia
     group: enshittification
-    query: "acquired shutting down service"
-    min_points: 40
+    query: "license change"
+    min_points: 20
+
+  - id: hn-enshittification
+    added: 2026-09-12
+    collector: hn_algolia
+    group: enshittification
+    query: "enshittification"
+    min_points: 15
+
+  # A shutdown announced by the incumbent itself, with a date attached. No forum
+  # thread required and no engagement metric exists — score.py's round-robin is
+  # what keeps these from sorting last behind a 60,000-star corpse.
+
+  - id: killed-by-google
+    added: 2026-09-12
+    collector: killedbygoogle
+    group: enshittification
+    closed_within_days: 540
 
   # ------------------------------------------------------------- mandate signals
   # Regulation that requires an interface nobody has built an open client for.
   # Structurally the best disruption opportunities: the incumbent cannot legally
   # close the door it was ordered to open.
 
-  - id: hn-interoperability-regulation
+  - id: eu-digital-strategy
+    added: 2026-09-12
+    collector: rss
+    group: mandate
+    url: https://digital-strategy.ec.europa.eu/en/rss.xml
+    window_days: 45
+
+  - id: hn-interoperability
+    added: 2026-09-12
     collector: hn_algolia
     group: mandate
-    query: "interoperability regulation mandate"
+    query: "interoperability"
     min_points: 20
+    window_days: 90
 
   - id: hn-digital-sovereignty
+    added: 2026-09-12
     collector: hn_algolia
     group: mandate
-    query: "digital sovereignty public sector open source"
-    min_points: 20
-
-  - id: hn-open-data-portal
-    collector: hn_algolia
-    group: mandate
-    query: "open data government portal"
+    query: "digital sovereignty"
     min_points: 15
+    window_days: 90
+
+  - id: hn-right-to-repair
+    added: 2026-09-12
+    collector: hn_algolia
+    group: mandate
+    query: "right to repair"
+    min_points: 40
+    window_days: 90
+
+  - id: hn-antitrust
+    added: 2026-09-12
+    collector: hn_algolia
+    group: mandate
+    query: "antitrust"
+    min_points: 25
+    window_days: 90
 
   # ------------------------------------------------------------- vacancy signals
   # A solved problem whose solution died. Proven demand, vacant seat.
+  #
+  # These queries are sorted by `updated`, not by stars, and windowed. Sorting a
+  # static corpus by stars returns the same forty famous corpses every run until
+  # the heat death of the universe; atom/atom is not news twice.
 
-  - id: gh-archived-popular
+  - id: gh-newly-archived
+    added: 2026-09-12
     collector: github_search
     group: vacancy
-    query: "archived:true stars:>1500 pushed:<2024-01-01"
-    sort: stars
+    query: "archived:true stars:>800 pushed:>2025-06-01"
+    sort: updated
 
-  - id: gh-stale-popular
+  - id: gh-stale-selfhosted
+    added: 2026-09-12
     collector: github_search
     group: vacancy
-    query: "stars:>2000 pushed:<2024-06-01 topic:self-hosted"
-    sort: stars
+    query: "stars:>1200 topic:self-hosted pushed:2024-01-01..2025-03-01"
+    sort: updated
+
+  - id: gh-stale-alternative
+    added: 2026-09-12
+    collector: github_search
+    group: vacancy
+    query: "topic:alternative stars:>400 pushed:2024-01-01..2025-06-01"
+    sort: updated
 
   - id: gh-fast-rising-foss
+    added: 2026-09-12
     collector: github_search
     group: vacancy
-    query: "topic:alternative stars:>200 created:>2025-09-01"
+    query: "topic:alternative stars:>150 created:>2026-03-01"
     sort: stars
+
+  # =========================================================================
+  # Feeds. Everything below arrived with the 2026-09-13 RSS import: the OPML
+  # export in rssguard_feeds_2026-06-30.opml (41 feeds, 9 kept — the rest are in
+  # `retired:`), plus feeds added around it. A feed
+  # carries no upvote, so score.py's round-robin is what keeps these from
+  # sorting last behind anything with a number attached.
+  # =========================================================================
+
+  # ------------------------------------- enshittification: the incumbent's own mouth
+  # A vendor announcing its own deprecation, price rise or forced migration is the
+  # highest-yield signal in the system (CLAUDE.md §10) and these feeds are where it
+  # is published first — usually days before anyone writes a thread about it.
+
+  - id: github-changelog
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://github.blog/changelog/feed/
+    window_days: 14
+    note: ships deprecations and forced migrations first
+
+  - id: google-workspace-updates
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://workspaceupdates.googleblog.com/atom.xml
+    window_days: 14
+    note: every Workspace change, including the removals
+
+  - id: aws-whats-new
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://aws.amazon.com/about-aws/whats-new/recent/feed/
+    window_days: 7
+    note: high volume; the end-of-support notices are the point
+
+  - id: cloudflare-blog
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://blog.cloudflare.com/rss/
+    window_days: 21
+
+  - id: mozilla-blog
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://blog.mozilla.org/en/feed/
+    window_days: 30
+
+  - id: home-assistant-blog
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://www.home-assistant.io/atom.xml
+    window_days: 30
+    note: names the clouds that shut their local APIs
+
+  - id: seznam-blog
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://blog.seznam.cz/sluzby-a-obsah/feed/
+    window_days: 60
+    note: a national incumbent announcing its own changes
+
+  # ------------------------------------------ enshittification: press that reports it
+  # Second-hand, but faster and wider than watching every vendor blog, and these
+  # four in particular exist to cover exactly this beat.
+
+  - id: arstechnica
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://feeds.arstechnica.com/arstechnica/index
+    window_days: 7
+
+  - id: netzpolitik
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://netzpolitik.org/feed/
+    window_days: 21
+    note: German digital policy; catches EU mandates before the English press
+
+  - id: techdirt
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://www.techdirt.com/feed/
+    window_days: 14
+
+  - id: 404media
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://www.404media.co/rss/
+    window_days: 14
+
+  - id: pluralistic
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://pluralistic.net/feed/
+    window_days: 14
+    note: Doctorow; the beat is named after his coinage
+
+  - id: verge
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://www.theverge.com/rss/index.xml
+    window_days: 7
+
+  - id: 9to5google
+    added: 2026-09-13
+    collector: rss
+    group: enshittification
+    url: https://9to5google.com/feed/
+    window_days: 7
+    note: Google product changes, ahead of the official post
+
+  # --------------------------------------------------------------- mandate feeds
+  # Regulators, and the organisations that read regulators for a living. No upvote
+  # exists anywhere on this material and no forum carries it early.
+
+  - id: eff-updates
+    added: 2026-09-13
+    collector: rss
+    group: mandate
+    url: https://www.eff.org/rss/updates.xml
+    window_days: 21
+
+  - id: edri
+    added: 2026-09-13
+    collector: rss
+    group: mandate
+    url: https://edri.org/feed/
+    window_days: 60
+    note: EU digital rights; tracks mandates while they are drafted
+
+  - id: openrightsgroup
+    added: 2026-09-13
+    collector: rss
+    group: mandate
+    url: https://www.openrightsgroup.org/feed/
+    window_days: 60
+
+  - id: noyb
+    added: 2026-09-13
+    collector: rss
+    group: mandate
+    url: https://noyb.eu/en/rss.xml
+    window_days: 60
+    note: GDPR enforcement; each win forces an interface open
+
+  - id: cma-uk
+    added: 2026-09-13
+    collector: rss
+    group: mandate
+    url: https://www.gov.uk/government/organisations/competition-and-markets-authority.atom
+    window_days: 45
+    note: UK competition remedies, often interoperability orders
+
+  - id: ifixit-news
+    added: 2026-09-13
+    collector: rss
+    group: mandate
+    url: https://www.ifixit.com/News/rss
+    window_days: 45
+    note: right-to-repair rules and who is ignoring them
+
+  - id: opensource-org
+    added: 2026-09-13
+    collector: rss
+    group: mandate
+    url: https://opensource.org/feed
+    window_days: 60
+
+  - id: sfconservancy
+    added: 2026-09-13
+    collector: rss
+    group: mandate
+    url: https://sfconservancy.org/feeds/news/
+    window_days: 90
+    note: licence enforcement; a win vacates a seat
+
+  # ------------------------------------------------------------------ pain feeds
+  # Where a dependency failing gets written up at length. Distro and FOSS press
+  # reports the workaround before anyone builds the replacement.
+
+  - id: slashdot
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://rss.slashdot.org/Slashdot/slashdotMainatom
+    window_days: 7
+
+  - id: itsfoss
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://feed.itsfoss.com/
+    window_days: 14
+
+  - id: fosspost
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://fosspost.org/feed/
+    window_days: 30
+
+  - id: omgubuntu
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://www.omgubuntu.co.uk/feed
+    window_days: 14
+
+  - id: xda
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://www.xda-developers.com/feed/
+    window_days: 7
+
+  - id: linuxiac
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://linuxiac.com/feed/
+    window_days: 14
+
+  - id: lwn
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://lwn.net/headlines/newrss
+    window_days: 14
+
+  - id: phoronix
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://www.phoronix.com/rss.php
+    window_days: 7
+
+  - id: selfhst
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://selfh.st/rss/
+    window_days: 21
+    note: weekly self-hosting roundup; dense per item
+
+  - id: root-cz
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://www.root.cz/rss/clanky/
+    window_days: 14
+    note: Czech; covers state IT the English press never sees
+
+  - id: lupa-cz
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://www.lupa.cz/rss/clanky-samostatne/
+    window_days: 14
+    note: Czech internet policy, telecom and e-government
+
+  - id: osm-blog
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://blog.openstreetmap.org/feed/
+    window_days: 60
+
+  - id: documentfoundation
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://blog.documentfoundation.org/feed/
+    window_days: 60
+
+  - id: codeberg-blog
+    added: 2026-09-13
+    collector: rss
+    group: pain
+    url: https://blog.codeberg.org/feeds/all.atom.xml
+    window_days: 90
+
+  # ------------------------------------------------------------ more pain forums
+  # Same collector, more communities. Each one is a place where people run into a
+  # closed dependency and say so in detail, with the thing in front of them.
+
+  - id: discourse-nixos
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: discourse.nixos.org
+    period: monthly
+    min_likes: 10
+
+  - id: discourse-ubuntu
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: discourse.ubuntu.com
+    period: monthly
+    min_likes: 10
+
+  - id: discourse-python
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: discuss.python.org
+    period: monthly
+    min_likes: 15
+
+  - id: discourse-kde
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: discuss.kde.org
+    period: monthly
+    min_likes: 10
+
+  - id: discourse-gnome
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: discourse.gnome.org
+    period: monthly
+    min_likes: 10
+
+  - id: discourse-level1techs
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: forum.level1techs.com
+    period: weekly
+    min_likes: 10
+
+  - id: discourse-qubes
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: forum.qubes-os.org
+    period: monthly
+    min_likes: 5
+
+  - id: discourse-nextcloud
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: help.nextcloud.com
+    period: monthly
+    min_likes: 5
+    note: the self-hosted replacement hitting the platform's edges
+
+  - id: discourse-signal
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: community.signalusers.org
+    period: monthly
+    min_likes: 10
+
+  - id: discourse-syncthing
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: forum.syncthing.net
+    period: monthly
+    min_likes: 3
+    note: low volume; the seat opposite iCloud and Dropbox
+
+  - id: discourse-yunohost
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: forum.yunohost.org
+    period: monthly
+    min_likes: 5
+
+  - id: discourse-obsidian
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: forum.obsidian.md
+    period: monthly
+    min_likes: 10
+    note: a closed app's own users listing what they cannot have
+
+  # ----------------------------------------------------------- more pain: lemmy
+
+  - id: lemmy-android
+    added: 2026-09-13
+    collector: lemmy
+    group: pain
+    instance: lemmy.world
+    community: android
+    sort: TopMonth
+    min_score: 40
+
+  - id: lemmy-opensource-pd
+    added: 2026-09-13
+    collector: lemmy
+    group: pain
+    instance: programming.dev
+    community: opensource
+    sort: TopMonth
+    min_score: 40
+
+  - id: lemmy-fediverse
+    added: 2026-09-13
+    collector: lemmy
+    group: pain
+    instance: lemmy.ml
+    community: fediverse
+    sort: TopMonth
+    min_score: 20
+
+  # ------------------------------------------------------- more queries, same wells
+  # Cheap breadth. One concept per query — Algolia ANDs every word, so a long query
+  # matches nothing. Windows are wide because these concepts surface irregularly.
+
+  - id: hn-vendor-lockin
+    added: 2026-09-13
+    collector: hn_algolia
+    group: enshittification
+    query: "vendor lock-in"
+    min_points: 20
+    window_days: 90
+
+  - id: hn-end-of-life
+    added: 2026-09-13
+    collector: hn_algolia
+    group: enshittification
+    query: "end of life"
+    min_points: 30
+    window_days: 60
+
+  - id: hn-rug-pull
+    added: 2026-09-13
+    collector: hn_algolia
+    group: enshittification
+    query: "rug pull"
+    min_points: 15
+    window_days: 90
+
+  - id: hn-telemetry
+    added: 2026-09-13
+    collector: hn_algolia
+    group: enshittification
+    query: "telemetry"
+    min_points: 25
+    window_days: 60
+
+  - id: hn-digital-identity
+    added: 2026-09-13
+    collector: hn_algolia
+    group: mandate
+    query: "digital identity"
+    min_points: 10
+    window_days: 90
+
+  - id: hn-government-software
+    added: 2026-09-13
+    collector: hn_algolia
+    group: mandate
+    query: "government software"
+    min_points: 10
+    window_days: 90
+
+  - id: hn-digital-markets-act
+    added: 2026-09-13
+    collector: hn_algolia
+    group: mandate
+    query: "Digital Markets Act"
+    min_points: 10
+    window_days: 90
+
+  - id: hn-open-standard
+    added: 2026-09-13
+    collector: hn_algolia
+    group: mandate
+    query: "open standard"
+    min_points: 20
+    window_days: 90
+
+  - id: hn-gdpr
+    added: 2026-09-13
+    collector: hn_algolia
+    group: mandate
+    query: "GDPR"
+    min_points: 25
+    window_days: 90
+
+  - id: hn-reverse-engineering
+    added: 2026-09-13
+    collector: hn_algolia
+    group: vacancy
+    query: "reverse engineering"
+    min_points: 40
+    window_days: 60
+    note: someone already did the hard half of the work
+
+  # -------------------------------------------------------- more stack exchange
+  # webapps is softwarerecs' sibling: "is there a web app that..." — and the
+  # unanswered ones are, again, the purest form of the signal.
+
+  - id: se-webapps-unanswered
+    added: 2026-09-13
+    collector: stackexchange
+    group: pain
+    site: webapps
+    unanswered: true
+    sort: votes
+    min_score: 1
+
+  - id: se-webapps-recent
+    added: 2026-09-13
+    collector: stackexchange
+    group: pain
+    site: webapps
+    sort: creation
+    min_score: 0
+
+  - id: discourse-openhab
+    added: 2026-09-13
+    collector: discourse
+    group: pain
+    host: community.openhab.org
+    period: monthly
+    min_likes: 5
+    note: devices whose vendor cloud went away
+
+  # ------------------------------------------------------------- more vacancies
+
+  - id: gh-archived-privacy
+    added: 2026-09-13
+    collector: github_search
+    group: vacancy
+    query: "archived:true topic:privacy stars:>200"
+    sort: updated
+
+  - id: gh-archived-large
+    added: 2026-09-13
+    collector: github_search
+    group: vacancy
+    query: "archived:true stars:>2000 pushed:>2025-01-01"
+    sort: updated
+
+  - id: gh-open-data-tools
+    added: 2026-09-13
+    collector: github_search
+    group: vacancy
+    query: "topic:open-data stars:>200 pushed:>2026-01-01"
+    sort: stars
+
+  - id: gh-interoperability
+    added: 2026-09-13
+    collector: github_search
+    group: vacancy
+    query: "interoperability in:readme stars:>300 pushed:>2026-01-01"
+    sort: stars
+
+
+# Tried and rejected. Never fetched; kept so the same dead source is not proposed
+# again next month. `why` is what a future agent needs to not repeat the work.
+
+retired:
+
+  - id: reddit-selfhosted
+    where: https://www.reddit.com/r/selfhosted
+    retired_on: 2026-09-12
+    why: 403s for every unauthenticated client; replaced by lemmy-selfhosted
+
+  - id: reddit-degoogle
+    where: https://www.reddit.com/r/degoogle
+    retired_on: 2026-09-12
+    why: same 403; replaced by lemmy-degoogle
+
+  - id: ftc-press
+    where: https://www.ftc.gov/feeds/press-release.xml
+    retired_on: 2026-09-13
+    why: 403 to scripted clients; no keyless alternative found
+
+  - id: fsf-news
+    where: https://www.fsf.org/static/fsforg/rss/news.xml
+    retired_on: 2026-09-13
+    why: connection reset by peer on every attempt
+
+  - id: joinup-osor
+    where: https://joinup.ec.europa.eu/rss/collection/open-source-observatory-osor
+    retired_on: 2026-09-13
+    why: 404; the OSOR collection feed no longer exists
+
+  - id: nextcloud-blog
+    where: https://nextcloud.com/blogfeed.xml
+    retired_on: 2026-09-13
+    why: 404; help.nextcloud.com carries the same signal with pain attached
+
+  - id: privacyguides-blog
+    where: https://www.privacyguides.org/en/blog/feed_rss_created.xml
+    retired_on: 2026-09-13
+    why: 404; discuss.privacyguides.net already covers it
+
+  - id: cloudflare-community
+    where: https://community.cloudflare.com
+    retired_on: 2026-09-13
+    why: Discourse instance 403s /top.json
+
+  - id: jellyfin-forum
+    where: https://forum.jellyfin.org
+    retired_on: 2026-09-13
+    why: not Discourse; /top.json returns HTML
+
+  - id: majorgeeks
+    where: https://www.majorgeeks.com/files/rss
+    retired_on: 2026-09-13
+    why: 404, and Windows shareware is out of charter anyway
+
+  - id: opml-consumer-tech
+    where: >
+      nytimes.com/technology, hanselman.com, technet.idnes.cz, stoplusjednicka.cz,
+      sciencenews.org, amusingplanet.com, chip.cz, svetandroida.cz, howtogeek.com
+    retired_on: 2026-09-13
+    why: 9 feeds that answer fine; gadget and pop-science volume, no incumbent named
+
+  - id: opml-off-charter
+    where: sport, travel, humour and general news feeds in the 2026-06-30 OPML
+    retired_on: 2026-09-13
+    why: 22 of the 41 feeds; no software dependency in them, out of charter by §4
+
+  - id: lemmy-opensource-world
+    where: https://lemmy.world/c/opensource
+    retired_on: 2026-09-13
+    why: community empty; programming.dev/c/opensource carries the traffic
+
+  - id: discourse-openstreetmap
+    where: https://community.openstreetmap.org
+    retired_on: 2026-09-12
+    why: tested 2026-09-12; 49 tagging-minutiae topics for 2 usable signals
+
+  - id: se-opendata
+    where: https://opendata.stackexchange.com
+    retired_on: 2026-09-12
+    why: tested 2026-09-12; dataset requests, not idea signal
+
+  - id: theregister
+    where: https://www.theregister.com/headlines.atom
+    retired_on: 2026-09-13
+    why: answered the probe, then served a proof-of-work "are we human" page instead
+
+  - id: sh-itjust-works-technology
+    where: https://sh.itjust.works/c/technology
+    retired_on: 2026-09-13
+    why: no posts above threshold; lemmy.world/c/technology already covers it

@@ -28,9 +28,10 @@ repo, linked from its entry. No project code lives here.
 
 These exist because each one, if broken, quietly destroys the list's value.
 
-1. **Never hand-edit `HITLIST.md` or `GRAVEYARD.md`.** They are generated artifacts.
-   Edit `ideas/*.yml`, then run `python3 harvest/render.py`. A PR that edits a
-   generated file directly fails validation.
+1. **Never hand-edit `HITLIST.md`, `GRAVEYARD.md`, `SHIPPED.md` or `SOURCES.md`.**
+   They are generated artifacts. Edit `ideas/*.yml` (or `harvest/sources.yml`), then
+   run `python3 harvest/render.py`. A PR that edits a generated file directly fails
+   validation.
 2. **One idea per file** in `ideas/`, named `<slug>.yml`. This is what makes
    concurrent agents possible — two agents adding ideas never touch the same file.
 3. **No entry without evidence.** Every idea carries at least one `evidence` item
@@ -60,13 +61,17 @@ README.md               human-facing explanation
 HITLIST.md              GENERATED — the ranked top 30
 GRAVEYARD.md            GENERATED — evicted ideas, with reason and date
 SHIPPED.md              GENERATED — ideas that became real repos
+SOURCES.md              GENERATED — the 100 sources, their health, and the retired
 ideas/<slug>.yml        source of truth, one file per idea
 schema/idea.schema.json validates every idea file
 rubric/SCORING.md       the rubric, versioned — bumping it re-scores everything
-harvest/sources.yml     where to look for candidates
+harvest/sources.yml     source of truth for SOURCES.md — where to look
+harvest/*.opml          feed exports a source import was triaged from, kept as provenance
+harvest/source_health.json  written by harvest.py: per-source runs, fails, dry streaks
 harvest/harvest.py      deterministic fetch -> candidates/<date>.jsonl  (no LLM)
 harvest/score.py        the one LLM pass: triage, score, dedupe, write ideas/
 harvest/render.py       ideas/*.yml -> HITLIST.md, GRAVEYARD.md, SHIPPED.md
+                        sources.yml + health -> SOURCES.md
 harvest/validate.py     schema check + generated-file drift check
 candidates/<date>.jsonl raw harvest, pre-judgment, append-only
 .github/workflows/      harvest.yml (cron), validate.yml (PR gate)
@@ -204,7 +209,7 @@ New candidates are always scored on arrival. Everything else keeps the score it 
 ```bash
 python3 harvest/harvest.py                 # fetch candidates -> candidates/<date>.jsonl
 python3 harvest/score.py                   # LLM pass: triage, score, write ideas/
-python3 harvest/render.py                  # regenerate HITLIST.md, GRAVEYARD.md, SHIPPED.md
+python3 harvest/render.py                  # regenerate HITLIST.md, GRAVEYARD.md, SHIPPED.md, SOURCES.md
 python3 harvest/validate.py                # schema + drift check; exits non-zero on failure
 ```
 
@@ -288,3 +293,38 @@ already does it well; anything undated; your own reasoning.
 - Emit strict JSON matching the schema. No markdown fences, no commentary.
 - If you find this contract ambiguous or wrong, do not improvise around it. Open a
   PR that changes this file and say why.
+
+---
+
+## 13. The source list
+
+`harvest/sources.yml` is the source of truth; **`SOURCES.md` is generated from it**
+by `render.py`, exactly like `HITLIST.md` is generated from `ideas/`. Same rule
+applies: never hand-edit the markdown.
+
+**The cap is 100 active sources.** It exists for the same reason the 30-idea cap
+does — an uncapped list grows until nobody prunes it, and a source nobody prunes is
+a source nobody checks. Past 100, a new source has to displace a worse one.
+`validate.py` fails the run if the file goes over.
+
+**Adding a source.** Probe it live first, with the collector that will fetch it, and
+only add it if it answers without an API key and without an account. Give it an
+`id`, a `group`, an `added` date, and — only if it is not obvious — a `note` of a
+dozen words at most. A source that needs a *new* collector is a script change, so it
+goes through a PR (§9).
+
+**Removing one.** Move the entry to `retired:` at the bottom of the file with
+`retired_on` and a `why`. Never delete it. That list is the dedupe ledger for
+sources, the same way `GRAVEYARD.md` is the one for ideas: without it, next month's
+agent re-adds the feed that 404s and re-discovers the forum that blocks scripts.
+
+**Deciding what is worth removing.** `harvest.py` records every run in
+`source_health.json` and `SOURCES.md` shows it: `warn` is one failed run, `failing`
+is three in a row, `dry` is six runs that returned nothing at all, `retire?` means
+it has been dead long enough. Those labels are counters, not verdicts — the call is
+a human's, or an agent's with a reason written down. A low-volume source that yields
+one good idea a quarter is doing its job; a high-volume source that has never
+produced an entry is not.
+
+**Groups are fixed**: `pain`, `enshittification`, `mandate`, `vacancy`. A source
+that fits none of them is a source that answers a question this list does not ask.

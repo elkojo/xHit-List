@@ -134,9 +134,43 @@ def load_candidates() -> list[dict]:
                 continue
             seen.add(row["url"])
             rows.append(row)
-    # Strongest signals first, so --limit truncates the tail not the head.
-    rows.sort(key=lambda r: r["score"] + 2 * r["comments"], reverse=True)
-    return rows
+    return interleave(rows)
+
+
+def interleave(rows: list[dict]) -> list[dict]:
+    """Round-robin across sources, each source strongest-first.
+
+    A flat sort by engagement is not comparable across sources: a GitHub repo
+    carries 20,000 stars, a Discourse topic carries 31 likes, and an announced
+    shutdown carries no number at all. Sorted flat, four GitHub queries own the
+    entire head of the list and --limit throws away every forum signal and every
+    regulator notice -- the two groups CLAUDE.md §10 rates highest.
+
+    So: rank within each source, then take one from each in turn. Every source
+    gets into the batch, and truncation costs each of them its weakest item
+    rather than costing two sources everything.
+
+    With 100 sources and --limit 60, one pass can no longer reach every source
+    even at one item each, so the starting bucket rotates with the date. Over a
+    week every source spends a run near the head instead of the same tail of the
+    file never being read at all.
+    """
+    by_source: dict[str, list[dict]] = {}
+    for row in rows:
+        by_source.setdefault(row["source_id"], []).append(row)
+    for bucket in by_source.values():
+        bucket.sort(key=lambda r: r["score"] + 2 * r["comments"], reverse=True)
+
+    out: list[dict] = []
+    buckets = [by_source[k] for k in sorted(by_source)]
+    if buckets:
+        offset = date.today().toordinal() % len(buckets)
+        buckets = buckets[offset:] + buckets[:offset]
+    for rank in range(max((len(b) for b in buckets), default=0)):
+        for bucket in buckets:
+            if rank < len(bucket):
+                out.append(bucket[rank])
+    return out
 
 
 # -------------------------------------------------------------------- prompting
@@ -309,7 +343,8 @@ def needs_rescore(idea: dict, rv: int, today: str) -> str | None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--limit", type=int, default=60, help="max candidates to triage")
+    # One item from each of 100 sources, plus a second from the strongest few.
+    ap.add_argument("--limit", type=int, default=120, help="max candidates to triage")
     ap.add_argument("--no-rescore", action="store_true")
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args()

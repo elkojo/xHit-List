@@ -14,7 +14,7 @@ on:
     inputs:
       limit:
         description: "Max candidates to triage"
-        default: "60"
+        default: "120"
       no_rescore:
         description: "Skip stale re-scoring"
         type: boolean
@@ -54,7 +54,7 @@ jobs:
           MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
         run: |
           python3 harvest/score.py \
-            --limit "${{ inputs.limit || '60' }}" \
+            --limit "${{ inputs.limit || '120' }}" \
             ${{ inputs.no_rescore && '--no-rescore' || '' }}
 
       - name: Re-rank and render
@@ -67,7 +67,8 @@ jobs:
         run: |
           git config user.name  "xhit-bot"
           git config user.email "bot@xhit.list"
-          git add -A ideas candidates HITLIST.md GRAVEYARD.md SHIPPED.md
+          git add -A ideas candidates HITLIST.md GRAVEYARD.md SHIPPED.md \
+                    SOURCES.md harvest/source_health.json
           if git diff --cached --quiet; then
             echo "nothing changed today"
             exit 0

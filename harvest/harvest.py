@@ -15,18 +15,22 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
+from xml.etree import ElementTree
 
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCES = ROOT / "harvest" / "sources.yml"
+HEALTH = ROOT / "harvest" / "source_health.json"
 CANDIDATES = ROOT / "candidates"
 
 TIMEOUT = 30
@@ -77,8 +81,46 @@ def fetch_text(url: str, user_agent: str) -> str | None:
         return None
 
 
+# Every warning raised while one source is being fetched. main() clears it before
+# each source and reads it after, which is how a fetch that failed is told apart
+# from one that simply had nothing new -- the two look identical from the outside
+# and only one of them means the source is dying.
+_WARNINGS: list[str] = []
+
+
 def warn(msg: str) -> None:
+    _WARNINGS.append(msg)
     print(f"  ! {msg}", file=sys.stderr)
+
+
+# ------------------------------------------------------------------ source health
+
+
+def load_health() -> dict:
+    if not HEALTH.exists():
+        return {}
+    try:
+        return json.loads(HEALTH.read_text()).get("sources", {})
+    except (json.JSONDecodeError, OSError):
+        warn("source_health.json unreadable; starting a fresh record")
+        return {}
+
+
+def record(health: dict, source_id: str, today: str, items: int, errors: list[str]) -> None:
+    """Bookkeeping only. Deciding that a source has earned retirement is a
+    judgment call and belongs to a human reading SOURCES.md, not to this file."""
+    prev = health.get(source_id, {})
+    failed = bool(errors)
+    health[source_id] = {
+        "last_run": today,
+        "last_ok": prev.get("last_ok") if failed else today,
+        "last_items": items,
+        "runs": prev.get("runs", 0) + 1,
+        "failed_runs": prev.get("failed_runs", 0) + (1 if failed else 0),
+        "consecutive_failures": (prev.get("consecutive_failures", 0) + 1) if failed else 0,
+        "consecutive_dry": (prev.get("consecutive_dry", 0) + 1) if items == 0 else 0,
+        "last_error": errors[-1][:200] if errors else "",
+    }
 
 
 # ---------------------------------------------------------------- normalised item
@@ -113,13 +155,12 @@ def item(
 
 
 def collect_hn_algolia(src: dict, cfg: dict) -> list[dict]:
-    since = int(
-        (datetime.now(timezone.utc) - timedelta(days=cfg["window_days"])).timestamp()
-    )
+    window = src.get("window_days", cfg["window_days"])
+    since = int((datetime.now(timezone.utc) - timedelta(days=window)).timestamp())
     params = urllib.parse.urlencode(
         {
-            "query": src["query"],
-            "tags": "story",
+            "query": src.get("query", ""),
+            "tags": src.get("tags", "story"),
             "numericFilters": f"created_at_i>{since},points>{src.get('min_points', 10)}",
             "hitsPerPage": 50,
         }
@@ -146,39 +187,213 @@ def collect_hn_algolia(src: dict, cfg: dict) -> list[dict]:
     return out
 
 
-def collect_reddit(src: dict, cfg: dict) -> list[dict]:
-    params = urllib.parse.urlencode({"t": src.get("period", "week"), "limit": 60})
-    url = (
-        f"https://www.reddit.com/r/{src['subreddit']}/"
-        f"{src.get('listing', 'top')}.json?{params}"
+def collect_lemmy(src: dict, cfg: dict) -> list[dict]:
+    """Lemmy communities. Reddit's JSON endpoint now 403s for unauthenticated
+    clients; the self-hosting and privacy crowd it used to carry is here, behind a
+    documented API that needs no key."""
+    params = urllib.parse.urlencode(
+        {
+            "community_name": src["community"],
+            "sort": src.get("sort", "TopWeek"),
+            "limit": 50,
+        }
     )
-    data = fetch_json(url, cfg["user_agent"])
+    data = fetch_json(
+        f"https://{src['instance']}/api/v3/post/list?{params}", cfg["user_agent"]
+    )
     if not data:
         return []
     out = []
-    for child in data.get("data", {}).get("children", []):
-        post = child.get("data", {})
-        if post.get("score", 0) < src.get("min_score", 0):
+    for row in data.get("posts", []):
+        post = row.get("post", {})
+        counts = row.get("counts", {})
+        if counts.get("score", 0) < src.get("min_score", 0):
             continue
-        created = post.get("created_utc")
-        posted = (
-            datetime.fromtimestamp(created, timezone.utc).strftime("%Y-%m-%d")
-            if created
-            else ""
-        )
         out.append(
             item(
                 source_id=src["id"],
                 group=src["group"],
-                title=post.get("title", ""),
-                url="https://www.reddit.com" + post.get("permalink", ""),
-                posted=posted,
-                score=post.get("score", 0),
-                comments=post.get("num_comments", 0),
-                body=post.get("selftext", ""),
+                title=post.get("name", ""),
+                url=post.get("ap_id") or "",
+                posted=(post.get("published") or "")[:10],
+                score=counts.get("score", 0),
+                comments=counts.get("comments", 0),
+                body=post.get("body") or post.get("url") or "",
             )
         )
     return out
+
+
+def collect_discourse(src: dict, cfg: dict) -> list[dict]:
+    """Any Discourse instance, via the /top.json every install exposes. One
+    collector, many forums -- adding a community is one entry in sources.yml."""
+    host = src["host"]
+    period = src.get("period", "weekly")
+    data = fetch_json(f"https://{host}/top.json?period={period}", cfg["user_agent"])
+    if not data:
+        return []
+    out = []
+    for topic in (data.get("topic_list") or {}).get("topics", []):
+        if topic.get("like_count", 0) < src.get("min_likes", 0):
+            continue
+        if topic.get("pinned") or topic.get("archetype") != "regular":
+            continue
+        slug = topic.get("slug") or "topic"
+        out.append(
+            item(
+                source_id=src["id"],
+                group=src["group"],
+                title=topic.get("title", ""),
+                url=f"https://{host}/t/{slug}/{topic.get('id')}",
+                posted=(topic.get("created_at") or "")[:10],
+                score=topic.get("like_count", 0),
+                comments=max(topic.get("posts_count", 1) - 1, 0),
+                body=topic.get("excerpt") or "",
+            )
+        )
+    return out
+
+
+def collect_stackexchange(src: dict, cfg: dict) -> list[dict]:
+    """Stack Exchange. softwarerecs is the highest-density source in the whole
+    file: every unanswered question is a tool someone wants that does not exist.
+    Keyless quota is 300 requests/day, far more than a daily harvest needs."""
+    path = "questions/unanswered" if src.get("unanswered") else "questions"
+    params = urllib.parse.urlencode(
+        {
+            "site": src["site"],
+            "order": "desc",
+            "sort": src.get("sort", "votes"),
+            "pagesize": 50,
+            "filter": "withbody",  # documented built-in: default shape + body
+        }
+    )
+    data = fetch_json(
+        f"https://api.stackexchange.com/2.3/{path}?{params}", cfg["user_agent"]
+    )
+    if not data:
+        return []
+    out = []
+    for q in data.get("items", []):
+        if q.get("score", 0) < src.get("min_score", 0):
+            continue
+        created = q.get("creation_date")
+        out.append(
+            item(
+                source_id=src["id"],
+                group=src["group"],
+                title=q.get("title", ""),
+                url=q.get("link", ""),
+                posted=(
+                    datetime.fromtimestamp(created, timezone.utc).strftime("%Y-%m-%d")
+                    if created
+                    else ""
+                ),
+                score=q.get("score", 0),
+                comments=q.get("answer_count", 0),
+                body=re.sub(r"<[^>]+>", " ", q.get("body") or ""),
+            )
+        )
+    return out
+
+
+def collect_killedbygoogle(src: dict, cfg: dict) -> list[dict]:
+    """Announced shutdowns, straight from the horse's mouth. CLAUDE.md §10 calls
+    this class of signal the highest-yield in the system: when a monopolist closes
+    a door, the window opens that same week."""
+    data = fetch_json("https://killedbygoogle.com/api/graveyard", cfg["user_agent"])
+    if not isinstance(data, list):
+        return []
+    horizon = (
+        date.today() - timedelta(days=src.get("closed_within_days", 365))
+    ).isoformat()
+    out = []
+    for entry in data:
+        closed = entry.get("dateClose") or ""
+        if closed < horizon:  # already cold; the window shut long ago
+            continue
+        out.append(
+            item(
+                source_id=src["id"],
+                group=src["group"],
+                title=f"Google is shutting down {entry.get('name')} ({closed})",
+                url=entry.get("link") or "",
+                posted=closed,
+                score=0,  # no engagement metric exists; ordering is score.py's job
+                comments=0,
+                body=(
+                    f"type={entry.get('type')} opened={entry.get('dateOpen')} "
+                    f"closes={closed}. {entry.get('description') or ''}"
+                ),
+            )
+        )
+    return out
+
+
+def collect_rss(src: dict, cfg: dict) -> list[dict]:
+    """Plain RSS/Atom. Carries the mandate group, which has no upvote anywhere:
+    regulators do not post to forums."""
+    text = fetch_text(src["url"], cfg["user_agent"])
+    if not text:
+        return []
+    try:
+        root = ElementTree.fromstring(text)
+    except ElementTree.ParseError as exc:
+        warn(f"{src['id']}: unparseable feed ({exc})")
+        return []
+
+    cutoff = (
+        datetime.now(timezone.utc) - timedelta(days=src.get("window_days", 30))
+    ).date()
+    out = []
+    for node in root.iter():
+        tag = node.tag.rsplit("}", 1)[-1]
+        if tag not in ("item", "entry"):
+            continue
+        fields = {c.tag.rsplit("}", 1)[-1]: c for c in node}
+        title = (fields.get("title").text or "") if "title" in fields else ""
+        link = ""
+        if "link" in fields:
+            link = fields["link"].get("href") or (fields["link"].text or "")
+        raw_date = ""
+        for key in ("pubDate", "published", "updated", "date"):
+            if key in fields and fields[key].text:
+                raw_date = fields[key].text.strip()
+                break
+        posted = parse_feed_date(raw_date)
+        if posted and date.fromisoformat(posted) < cutoff:
+            continue
+        summary = ""
+        for key in ("description", "summary", "content"):
+            if key in fields and fields[key].text:
+                summary = fields[key].text
+                break
+        out.append(
+            item(
+                source_id=src["id"],
+                group=src["group"],
+                title=title,
+                url=link,
+                posted=posted,
+                score=0,  # feeds carry no engagement signal
+                comments=0,
+                body=re.sub(r"<[^>]+>", " ", summary),
+            )
+        )
+    return out
+
+
+def parse_feed_date(raw: str) -> str:
+    if not raw:
+        return ""
+    try:
+        return parsedate_to_datetime(raw).date().isoformat()
+    except (TypeError, ValueError):
+        pass
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00")).date().isoformat()
+    except ValueError:
+        return ""
 
 
 def collect_lobsters(src: dict, cfg: dict) -> list[dict]:
@@ -242,7 +457,11 @@ def collect_github_search(src: dict, cfg: dict) -> list[dict]:
 
 COLLECTORS = {
     "hn_algolia": collect_hn_algolia,
-    "reddit": collect_reddit,
+    "lemmy": collect_lemmy,
+    "discourse": collect_discourse,
+    "stackexchange": collect_stackexchange,
+    "killedbygoogle": collect_killedbygoogle,
+    "rss": collect_rss,
     "lobsters": collect_lobsters,
     "github_search": collect_github_search,
 }
@@ -266,6 +485,12 @@ def main() -> int:
 
     seen_urls: set[str] = set()
     rows: list[dict] = []
+    today = date.today().isoformat()
+    health = load_health()
+
+    cap = cfg.get("max_sources")
+    if cap and len(spec["sources"]) > cap:
+        warn(f"{len(spec['sources'])} sources exceeds the cap of {cap} — retire one")
 
     for src in spec["sources"]:
         if wanted and src.get("group") not in wanted:
@@ -276,15 +501,17 @@ def main() -> int:
             continue
 
         print(f"- {src['id']} ({src['group']})")
+        _WARNINGS.clear()
         try:
             found = collector(src, cfg)
         except Exception as exc:  # noqa: BLE001
             warn(f"{src['id']} raised {type(exc).__name__}: {exc}")
-            continue
+            found = []
 
         fresh = [r for r in found if r["url"] and r["url"] not in seen_urls]
         seen_urls.update(r["url"] for r in fresh)
         rows.extend(fresh)
+        record(health, src["id"], today, len(found), list(_WARNINGS))
         print(f"    {len(fresh)} new ({len(found)} fetched)")
         time.sleep(1)  # be a good citizen
 
@@ -293,6 +520,24 @@ def main() -> int:
     if args.dry_run:
         print("(dry run, nothing written)")
         return 0
+
+    if not wanted:
+        # A full run is the only run that can speak for every source; a --group run
+        # must not silently drop the health record of the ones it skipped.
+        known = {s["id"] for s in spec["sources"]} | {
+            r["id"] for r in spec.get("retired") or []
+        }
+        health = {k: v for k, v in health.items() if k in known}
+    HEALTH.write_text(
+        json.dumps(
+            {"generated": today, "sources": dict(sorted(health.items()))},
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    print(f"health -> {HEALTH.relative_to(ROOT)}")
 
     CANDIDATES.mkdir(exist_ok=True)
     out = CANDIDATES / f"{date.today().isoformat()}.jsonl"

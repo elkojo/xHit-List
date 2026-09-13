@@ -15,18 +15,24 @@ Everything else in this repo exists to keep that one file honest.
 
 ```
 sources.yml ──harvest.py──> candidates/*.jsonl ──score.py──> ideas/*.yml
-                (fetch only,                      (the one          (source
+ (100 sources)  (fetch only,                      (the one          (source
                  no judgment)                    judgment step)    of truth)
-                                                                        │
-                                                                   render.py
-                                                                        ▼
-                                                    HITLIST.md · GRAVEYARD.md · SHIPPED.md
+      │                                                                 │
+      └──────────────────── render.py ─────────────────────────────────┤
+                                 ▼                                      ▼
+                            SOURCES.md        HITLIST.md · GRAVEYARD.md · SHIPPED.md
 ```
 
-A daily GitHub Action fetches signals from ~20 sources, an LLM triages them against
-a fixed rubric, and a deterministic script re-ranks and regenerates the markdown.
-Judgment lives in exactly one script, so when a ranking looks wrong there is exactly
-one place to look.
+A daily GitHub Action fetches signals from **100 sources**, an LLM triages them
+against a fixed rubric, and a deterministic script re-ranks and regenerates the
+markdown. Judgment lives in exactly one script, so when a ranking looks wrong there
+is exactly one place to look.
+
+**The sources are a list too**, capped at 100 and kept in
+[`SOURCES.md`](SOURCES.md) with each one's health: how many runs it has survived,
+how long it has been failing, how long it has returned nothing. A source that stops
+earning its slot is retired with a reason and stays in the retired table, so nobody
+adds it back next month.
 
 **The list is capped at 30.** A new idea earns its place by pushing a weaker one out
 to [`GRAVEYARD.md`](GRAVEYARD.md) — with its score, the date, and the reason.

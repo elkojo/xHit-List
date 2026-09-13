@@ -1,0 +1,40 @@
+slug: smartthings-exit-exporter
+title: Escape hatch for SmartThings before the October API fee
+status: live
+pinned: false
+target:
+  kind: closed_source
+  name: Samsung SmartThings cloud
+  why_vulnerable: 'Samsung is moving its own customers'' automations behind a monthly fee
+    in October 2026. Every affected household wants its configuration out first.
+
+    '
+what: 'A one-shot exporter that pulls rooms, devices, scenes and automations from the SmartThings
+  API and writes Home Assistant YAML plus a Zigbee re-pairing plan for the hardware already
+  on the wall.
+
+  '
+rationale: 'Samsung set a date and a price for access its customers already had. The destination
+  is mature; the hand work is the blocker — the migration in the cited thread cost days of
+  container debugging and a bug workaround. An exporter turns that into an afternoon, and
+  the deadline supplies the urgency.
+
+  '
+scores:
+  reward: 3
+  disruption: 3
+  effort: 2
+  demand: 2
+  moat_risk: 3
+evidence:
+- url: https://community.home-assistant.io/t/leaving-smartthings-before-the-october-api-fees-my-apartment-now-runs-on-an-old-macbook/1024088
+  date: '2026-09-05'
+  note: October 2026 fee, $4.99/month; migration took days by hand
+first_seen: '2026-09-12'
+last_scored: '2026-09-12'
+rubric_version: 1
+legal_note: 'Reads the user''s own account through Samsung''s documented API. After October
+  a user may need one paid month to run the export.
+
+  '
+xhit: 4.0
