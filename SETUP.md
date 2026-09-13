@@ -10,22 +10,24 @@ Pick up here.
 
 ## 0. Where this stands (2026-09-13)
 
-`main` holds the scaffold plus one harvest-audit commit; the work from the
-2026-09-12 and 2026-09-13 sessions sits on branch **`harvest/live-sources`**,
-unpushed because there is still no remote:
+The repo is live at **<https://github.com/elkojo/xHit-List>** (public). `main`
+holds the scaffold plus one harvest-audit commit; the work from the 2026-09-12 and
+2026-09-13 sessions is on branch **`harvest/live-sources`**, pushed and under
+review in **[PR #1](https://github.com/elkojo/xHit-List/pull/1)**:
 
 ```
-(2026-09-13) sources: 100-source registry + SOURCES.md     (branch)
+a74b57e  harvest: 1571 candidates from 100 sources         (branch)
+7c6ad0a  sources: 100-source registry + SOURCES.md         (branch)
 c688900  docs(setup): record session state                 (branch)
 212d7c6  harvest: +4 ideas, 0 evicted, 0 rescored          (branch)
-ea6e46b  harvest: normalise YAML-native dates on load     (branch)
+ea6e46b  harvest: normalise YAML-native dates on load      (branch)
 e49384f  harvest: replace dead sources, add five collectors, fix ordering  (branch)
-a7318fb  harvest: 70 candidates, 0 ideas, 0 rescored      (main)
+a7318fb  harvest: 70 candidates, 0 ideas, 0 rescored       (main)
 ```
 
-That branch needs a PR, not a merge to `main` — it changes `harvest.py`,
-`score.py`, `render.py` and `validate.py`, which CLAUDE.md §9 puts behind review.
-Opening it is blocked on step 1.
+It is a PR and not a merge to `main` because it changes `harvest.py`, `score.py`,
+`render.py` and `validate.py`, which CLAUDE.md §9 puts behind review. The
+`validate` workflow passes on it.
 
 `HITLIST.md` is seeded with 4 live entries. The pipeline is green end to end
 (`validate.py` exits 0).
@@ -38,33 +40,15 @@ changed. Decide which is primary, then open a PR against §8 and the workflow.
 
 ---
 
-## 1. Create the remote and push
+## 1. Create the remote and push — DONE 2026-09-13
 
-The repo does not exist on GitHub yet. It was meant to be `elkojo/xHit-List`,
-public.
+<https://github.com/elkojo/xHit-List>, public, `origin` over https. `gh` is
+authenticated as `elkojo`.
 
-`gh` **is** installed and authenticated as `elkojo`:
-
-```bash
-cd ~/Claude/xHit
-gh repo create elkojo/xHit-List --public --source=. --remote=origin --push
-git push -u origin harvest/live-sources
-gh pr create --base main --head harvest/live-sources
-```
-
-**Without `gh`** — create an empty repo named `xHit-List` at
-<https://github.com/new> (public, **no** README, **no** .gitignore, **no** licence —
-this repo already has them and an auto-init would collide), then:
-
-```bash
-cd ~/Claude/xHit
-git remote add origin git@github.com:elkojo/xHit-List.git
-git push -u origin main
-```
-
-- [ ] remote created
-- [ ] `main` pushed
-- [ ] `harvest/live-sources` pushed and PR opened
+- [x] remote created
+- [x] `main` pushed
+- [x] `harvest/live-sources` pushed and [PR #1](https://github.com/elkojo/xHit-List/pull/1) opened
+- [ ] PR #1 reviewed and merged
 
 ## 2. Add the model secrets
 
@@ -95,6 +79,9 @@ permissions.** Without this the daily job runs, finds ideas, and then fails at
 `git push` — which looks like a mysterious harvest failure.
 
 - [ ] workflow permissions set to read and write
+
+This is now the **next blocker**: the cron is live at 05:17 UTC and the job will
+reach `git push` on its first successful run.
 
 ## 4. First run
 
