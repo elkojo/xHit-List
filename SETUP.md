@@ -48,7 +48,7 @@ authenticated as `elkojo`.
 - [x] remote created
 - [x] `main` pushed
 - [x] `harvest/live-sources` pushed and [PR #1](https://github.com/elkojo/xHit-List/pull/1) opened
-- [ ] PR #1 reviewed and merged
+- [x] PR #1 merged (2026-09-13); PR #2 merged the same day
 
 ## 2. Add the model secrets — OPTIONAL
 
@@ -71,7 +71,7 @@ through one key. A local llama.cpp also works, but not from a GitHub runner — 
 that, run `score.py` on poppy against `http://localhost:8080/v1` and push the result.
 
 - [x] decided: optional second route, agent is primary (2026-09-13)
-- [ ] `MODEL_BASE_URL`
+- [ ] `MODEL_BASE_URL`   — not needed unless you want unattended triage
 - [ ] `MODEL_NAME`
 - [ ] `MODEL_API_KEY`
 
@@ -83,16 +83,21 @@ permissions.** Without this the daily job runs, finds ideas, and then fails at
 
 - [x] workflow permissions set to read and write (2026-09-13, via the API)
 
-## 4. First run
+## 4. First run — DONE 2026-09-13
 
-**Actions → harvest → Run workflow.** The cron fires at 05:17 UTC daily.
+Dispatched manually against `harvest/optional-scoring` before merging it, which is
+the whole nightly path: fetch (100 sources), score **skipped** (no endpoint set),
+render, validate, commit, push. Green, and it pushed
+`harvest: 1531 candidates, not yet triaged` under the new write permission.
 
-Start conservative: `limit: 30` on the first run so you can read every entry the
-curator produced and check its judgment against the rubric before trusting it with
-60 candidates a night.
+The cron fires at 05:17 UTC daily from here.
 
-- [ ] first manual run green
-- [ ] entries in `HITLIST.md` reviewed against `rubric/SCORING.md`
+- [x] first manual run green
+- [ ] **entries in `HITLIST.md` reviewed against `rubric/SCORING.md`** — the one
+      thing still genuinely open. Eleven entries are live; seven were scored by the
+      2026-09-13 agent pass and have never been checked by a human. Read the
+      scores, not just the titles: the failure mode this rubric warns about is
+      optimism, and an effort estimate that is too low moves an entry up the list.
 
 ## 5. Tune after you have seen real output
 
