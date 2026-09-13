@@ -1,0 +1,45 @@
+slug: consent-banner-evidence-kit
+title: Evidence kit for illegal cookie banners
+status: live
+pinned: false
+target:
+  kind: pseudo_monopoly
+  name: IAB TCF consent-management platforms
+  why_vulnerable: 'A handful of vendors supply the banners on most of the web, so the same
+    dark patterns repeat identically across every one of their installs.
+
+    '
+what: 'A browser extension that records what a banner actually did — requests fired before
+  consent, pre-ticked vendors, reject buttons that do nothing — and exports a filled-in complaint
+  for the regulator.
+
+  '
+rationale: 'noyb files these by hand, one site at a time, and wins. A complaint needs a reproducible
+  record of the violation, which is precisely what a browser can capture by itself. The Commission
+  is proposing browser-level signals while the ad industry lobbies against them; evidence
+  at scale is what settles that fight.
+
+  '
+scores:
+  reward: 3
+  disruption: 3
+  effort: 2
+  demand: 4
+  moat_risk: 2
+evidence:
+- url: https://noyb.eu/en/1741-informed-consents-one-click-gdpr-complaint-against-dictcc-filed
+  date: '2026-07-30'
+  note: Complaint over 1,741 consents gathered with a single click
+- url: https://news.ycombinator.com/item?id=49106384
+  date: '2026-07-30'
+  note: 167-point thread on the same complaint
+- url: https://noyb.eu/en/open-letter-civil-society-coalition-urges-eu-kill-cookie-banner
+  date: '2026-09-10'
+  note: Civil society open letter demanding browser-level consent signals
+- url: https://lemmy.ml/post/52539308
+  date: '2026-09-10'
+  note: 306-point thread; industry lobbying against killing the banner
+first_seen: '2026-09-13'
+last_scored: '2026-09-13'
+rubric_version: 1
+xhit: 5.33

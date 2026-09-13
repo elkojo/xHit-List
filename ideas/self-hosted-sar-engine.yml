@@ -1,0 +1,45 @@
+slug: self-hosted-sar-engine
+title: Self-hosted engine for GDPR access and erasure requests
+status: live
+pinned: false
+target:
+  kind: closed_source
+  name: Data-broker removal subscriptions (Incogni, DeleteMe)
+  why_vulnerable: 'They charge rent to send letters you already have the legal right to send,
+    and they need your identity documents in their hands to send them.
+
+    '
+what: 'A self-hosted tool that generates, sends and tracks Article 15 and 17 requests against
+  a maintained controller list, parses the replies, and keeps your identity documents on your
+  own disk.
+
+  '
+rationale: 'The right is free; exercising it a hundred times is not, which is the whole business
+  model of the subscriptions. Someone did exactly that by hand this month and several companies
+  deleted rather than disclose. Credit bureaus are simultaneously being sued over records
+  they should have erased. The letters are formulaic, which is what makes this automatable.
+
+  '
+scores:
+  reward: 4
+  disruption: 3
+  effort: 3
+  demand: 4
+  moat_risk: 1
+evidence:
+- url: https://feddit.org/post/34114036
+  date: '2026-08-15'
+  note: 283-point thread on credit and browsing data used to suppress wages
+- url: https://noyb.eu/en/shadow-database-scandal-noyb-sends-schufa-cease-and-desist-letter-interest-list-class-action
+  date: '2026-08-26'
+  note: Class-action interest list opened over records that should have been deleted
+- url: https://lemmy.world/post/51351060
+  date: '2026-08-31'
+  note: 317-point thread; asked 100 companies for data, some deleted it instead
+- url: https://noyb.eu/en/schufa-insists-shadow-database-noyb-lawsuit-now-certain
+  date: '2026-09-10'
+  note: Credit bureau refuses to delete its shadow database; lawsuit now certain
+first_seen: '2026-09-13'
+last_scored: '2026-09-13'
+rubric_version: 1
+xhit: 5.14

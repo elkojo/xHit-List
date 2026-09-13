@@ -1,0 +1,35 @@
+slug: offline-screen-translator
+title: Offline screen translator for Android, without Google
+status: live
+pinned: false
+target:
+  kind: closed_source
+  name: Google Lens and Translate screen overlay
+  why_vulnerable: 'The overlay ships with Play Services, sends screen contents to Google,
+    and has no equivalent at all on a de-Googled phone.
+
+    '
+what: 'An Android overlay that reads whatever is on screen with local OCR and translates it
+  with on-device models — no account, no ads, and no network call in the path.
+
+  '
+rationale: 'Every de-Googled phone loses this capability the day it is flashed, and the request
+  keeps coming back with the same three conditions attached: open source, no ads, works offline.
+  On-device OCR and small translation models both run comfortably on current hardware, which
+  is what turns this from a research project into a short build.
+
+  '
+scores:
+  reward: 3
+  disruption: 2
+  effort: 2
+  demand: 2
+  moat_risk: 0
+evidence:
+- url: https://lemmy.world/post/51616037
+  date: '2026-09-07'
+  note: Request for an open screen translator that is not Google's
+first_seen: '2026-09-13'
+last_scored: '2026-09-13'
+rubric_version: 1
+xhit: 6.0

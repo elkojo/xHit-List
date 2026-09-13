@@ -1,0 +1,38 @@
+slug: household-recursive-resolver
+title: One-command recursive DNS resolver for a household
+status: live
+pinned: false
+target:
+  kind: pseudo_monopoly
+  name: Public DNS resolvers (Cloudflare, Google, Quad9)
+  why_vulnerable: 'Nearly every encrypted query resolves through one of three operators, and
+    the list just got shorter when a privacy vendor closed its own and sent users on.
+
+    '
+what: 'An appliance that resolves recursively from the root on your own network, speaks DoH
+  and DoT to your phones and laptops, and forwards no query to any operator at all.
+
+  '
+rationale: 'Encrypted DNS fixed the eavesdropper and created a bottleneck: a handful of resolvers
+  now see almost everything. Mullvad shutting its servers and pointing users at Quad9 concentrates
+  it further. Recursing locally deletes the operator from the picture. Every piece exists;
+  nobody has made it one command.
+
+  '
+scores:
+  reward: 3
+  disruption: 3
+  effort: 2
+  demand: 2
+  moat_risk: 0
+evidence:
+- url: https://discuss.privacyguides.net/t/shutting-down-our-public-encrypted-dns-servers-and-sponsoring-quad9-instead/40439
+  date: '2026-09-03'
+  note: Privacy Guides thread on a privacy vendor closing its public resolvers
+- url: https://news.ycombinator.com/item?id=49568579
+  date: '2026-09-04'
+  note: 483-point thread on the same shutdown
+first_seen: '2026-09-13'
+last_scored: '2026-09-13'
+rubric_version: 1
+xhit: 7.0

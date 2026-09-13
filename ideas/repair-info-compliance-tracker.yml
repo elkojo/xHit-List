@@ -1,0 +1,39 @@
+slug: repair-info-compliance-tracker
+title: Compliance tracker for EU smartphone repair obligations
+status: live
+pinned: false
+target:
+  kind: state_service
+  name: EPREL, the EU energy-label product database
+  why_vulnerable: 'It is the public register the repair rules point at, but nobody checks
+    the records, so a missing repair link currently costs a manufacturer nothing.
+
+    '
+what: 'A crawler that reads EPREL records, follows each manufacturer''s repair information
+  link, scores what is actually published against the Ecodesign requirements, and files the
+  gaps with market surveillance authorities.
+
+  '
+rationale: 'iFixit reviewed 2,334 records and found only about 18% lead to spare parts. The
+  obligation is a year old and unenforced because nobody checks at scale. The data is already
+  public and the rules are a checklist, so this is a scraper and a table that manufactures
+  enforcement pressure out of existing law.
+
+  '
+scores:
+  reward: 3
+  disruption: 3
+  effort: 2
+  demand: 2
+  moat_risk: 1
+evidence:
+- url: https://news.ycombinator.com/item?id=49126652
+  date: '2026-07-31'
+  note: Thread on the EU making right to repair the European standard
+- url: https://www.ifixit.com/News/119217/one-year-into-eu-ecodesign-rules-80-of-smartphones-lack-repair-info
+  date: '2026-09-10'
+  note: 2,334 EPREL records reviewed; about 18% point to spare parts
+first_seen: '2026-09-13'
+last_scored: '2026-09-13'
+rubric_version: 1
+xhit: 5.6

@@ -6,14 +6,21 @@ Top 30 projects worth building, ranked by reward against effort and
 weighted toward breaking closed source, state service monopolies and
 pseudo-monopolies.
 
-`4/30 live` · `rubric v1` · updated 2026-09-13
+`11/30 live` · `rubric v1` · updated 2026-09-13
 
 | # | idea | xhit | target | R | D | E | Dm | M | evidence |
 |---:|---|---:|---|:-:|:-:|:-:|:-:|:-:|---|
-| 1 | **[Per-device telemetry watch for smart TVs and appliances](#lan-telemetry-observatory)** | 5.43 | Smart TV and appliance firmware (LG webOS, Samsung Tizen) <sup>closed source</sup> | 4 | 3 | 3 | 5 | 1 | [2026-09-11](https://lemmy.zip/post/71321781) |
-| 2 | **[Triage your Android apps before Google's sideload cutoff](#play-store-exit-triage)** | 4.00 | Google Play app distribution <sup>pseudo-monopoly</sup> | 3 | 2 | 2 | 4 | 3 | [2026-09-10](https://discuss.privacyguides.net/t/best-android-privacy-friendly-keyboard-after-google-blocks-non-play-store-in-2027/40598) |
-| 3 | **[Escape hatch for SmartThings before the October API fee](#smartthings-exit-exporter)** | 4.00 | Samsung SmartThings cloud <sup>closed source</sup> | 3 | 3 | 2 | 2 | 3 | [2026-09-05](https://community.home-assistant.io/t/leaving-smartthings-before-the-october-api-fees-my-apartment-now-runs-on-an-old-macbook/1024088) |
-| 4 | **[Community server for the last AGPL AppFlowy release](#appflowy-open-server)** | 2.33 | AppFlowy open-core relicensing <sup>closed source</sup> | 3 | 3 | 4 | 2 | 4 | [2026-09-11](https://github.com/AppFlowy-IO/AppFlowy-Cloud) |
+| 1 | **[One-command recursive DNS resolver for a household](#household-recursive-resolver)** | 7.00 | Public DNS resolvers (Cloudflare, Google, Quad9) <sup>pseudo-monopoly</sup> | 3 | 3 | 2 | 2 | 0 | [2026-09-04](https://news.ycombinator.com/item?id=49568579) |
+| 2 | **[Offline screen translator for Android, without Google](#offline-screen-translator)** | 6.00 | Google Lens and Translate screen overlay <sup>closed source</sup> | 3 | 2 | 2 | 2 | 0 | [2026-09-07](https://lemmy.world/post/51616037) |
+| 3 | **[Audit what Android installed on your phone without asking](#android-silent-install-audit)** | 6.00 | Google Play Services and system module updates <sup>pseudo-monopoly</sup> | 3 | 3 | 2 | 3 | 1 | [2026-08-26](https://lemmy.zip/post/70348981) |
+| 4 | **[Compliance tracker for EU smartphone repair obligations](#repair-info-compliance-tracker)** | 5.60 | EPREL, the EU energy-label product database <sup>state service</sup> | 3 | 3 | 2 | 2 | 1 | [2026-09-10](https://www.ifixit.com/News/119217/one-year-into-eu-ecodesign-rules-80-of-smartphones-lack-repair-info) |
+| 5 | **[Per-device telemetry watch for smart TVs and appliances](#lan-telemetry-observatory)** | 5.43 | Smart TV and appliance firmware (LG webOS, Samsung Tizen) <sup>closed source</sup> | 4 | 3 | 3 | 5 | 1 | [2026-09-11](https://lemmy.zip/post/71321781) |
+| 6 | **[Evidence kit for illegal cookie banners](#consent-banner-evidence-kit)** | 5.33 | IAB TCF consent-management platforms <sup>pseudo-monopoly</sup> | 3 | 3 | 2 | 4 | 2 | [2026-09-10](https://noyb.eu/en/open-letter-civil-society-coalition-urges-eu-kill-cookie-banner) |
+| 7 | **[Self-hosted engine for GDPR access and erasure requests](#self-hosted-sar-engine)** | 5.14 | Data-broker removal subscriptions (Incogni, DeleteMe) <sup>closed source</sup> | 4 | 3 | 3 | 4 | 1 | [2026-09-10](https://noyb.eu/en/schufa-insists-shadow-database-noyb-lawsuit-now-certain) |
+| 8 | **[Open age-verification client for de-Googled and Linux devices](#open-age-verification-client)** | 4.17 | EU age-verification and eID wallet apps <sup>state service</sup> | 5 | 5 | 4 | 5 | 4 | [2026-09-07](https://edri.org/our-work/eu-age-verification-tool-does-not-solve-privacy-concerns/) |
+| 9 | **[Triage your Android apps before Google's sideload cutoff](#play-store-exit-triage)** | 4.00 | Google Play app distribution <sup>pseudo-monopoly</sup> | 3 | 2 | 2 | 4 | 3 | [2026-09-10](https://discuss.privacyguides.net/t/best-android-privacy-friendly-keyboard-after-google-blocks-non-play-store-in-2027/40598) |
+| 10 | **[Escape hatch for SmartThings before the October API fee](#smartthings-exit-exporter)** | 4.00 | Samsung SmartThings cloud <sup>closed source</sup> | 3 | 3 | 2 | 2 | 3 | [2026-09-05](https://community.home-assistant.io/t/leaving-smartthings-before-the-october-api-fees-my-apartment-now-runs-on-an-old-macbook/1024088) |
+| 11 | **[Community server for the last AGPL AppFlowy release](#appflowy-open-server)** | 2.33 | AppFlowy open-core relicensing <sup>closed source</sup> | 3 | 3 | 4 | 2 | 4 | [2026-09-11](https://github.com/AppFlowy-IO/AppFlowy-Cloud) |
 
 <sub>R reward · D disruption · E effort (lower is easier) · Dm demand · M moat risk. See [rubric/SCORING.md](rubric/SCORING.md).</sub>
 
@@ -21,9 +28,73 @@ pseudo-monopolies.
 
 ## Entries
 
+### household-recursive-resolver
+
+**1. One-command recursive DNS resolver for a household** — xhit **7.00**
+
+*What:* An appliance that resolves recursively from the root on your own network, speaks DoH and DoT to your phones and laptops, and forwards no query to any operator at all.
+
+*Target:* Public DNS resolvers (Cloudflare, Google, Quad9) (pseudo-monopoly) — Nearly every encrypted query resolves through one of three operators, and the list just got shorter when a privacy vendor closed its own and sent users on.
+
+*Why now:* Encrypted DNS fixed the eavesdropper and created a bottleneck: a handful of resolvers now see almost everything. Mullvad shutting its servers and pointing users at Quad9 concentrates it further. Recursing locally deletes the operator from the picture. Every piece exists; nobody has made it one command.
+
+*Scores:* reward 3 · disruption 3 · effort 2 · demand 2 · moat risk 0
+
+*Evidence:* [2026-09-04](https://news.ycombinator.com/item?id=49568579) · [2026-09-03](https://discuss.privacyguides.net/t/shutting-down-our-public-encrypted-dns-servers-and-sponsoring-quad9-instead/40439)
+
+<sub>first seen 2026-09-13 · last scored 2026-09-13 · rubric v1</sub>
+
+### offline-screen-translator
+
+**2. Offline screen translator for Android, without Google** — xhit **6.00**
+
+*What:* An Android overlay that reads whatever is on screen with local OCR and translates it with on-device models — no account, no ads, and no network call in the path.
+
+*Target:* Google Lens and Translate screen overlay (closed source) — The overlay ships with Play Services, sends screen contents to Google, and has no equivalent at all on a de-Googled phone.
+
+*Why now:* Every de-Googled phone loses this capability the day it is flashed, and the request keeps coming back with the same three conditions attached: open source, no ads, works offline. On-device OCR and small translation models both run comfortably on current hardware, which is what turns this from a research project into a short build.
+
+*Scores:* reward 3 · disruption 2 · effort 2 · demand 2 · moat risk 0
+
+*Evidence:* [2026-09-07](https://lemmy.world/post/51616037)
+
+<sub>first seen 2026-09-13 · last scored 2026-09-13 · rubric v1</sub>
+
+### android-silent-install-audit
+
+**3. Audit what Android installed on your phone without asking** — xhit **6.00**
+
+*What:* An on-device tool that diffs installed packages and system modules over time, names whatever arrived silently, shows its permissions and network peers, and says plainly whether it can be removed.
+
+*Target:* Google Play Services and system module updates (pseudo-monopoly) — It installs and updates components outside the app store with no notice, and some of what it delivers cannot be removed by the owner of the phone.
+
+*Why now:* Google pushed an on-device nudity scanner to phones and then opened it to third party apps; users found it days later and could not uninstall it. The install channel is the story, not that one module. A diff over time turns a rumour thread into a record somebody can act on.
+
+*Scores:* reward 3 · disruption 3 · effort 2 · demand 3 · moat risk 1
+
+*Evidence:* [2026-08-26](https://lemmy.zip/post/70348981) · [2026-08-16](https://lemmy.ml/post/51457768)
+
+<sub>first seen 2026-09-13 · last scored 2026-09-13 · rubric v1</sub>
+
+### repair-info-compliance-tracker
+
+**4. Compliance tracker for EU smartphone repair obligations** — xhit **5.60**
+
+*What:* A crawler that reads EPREL records, follows each manufacturer's repair information link, scores what is actually published against the Ecodesign requirements, and files the gaps with market surveillance authorities.
+
+*Target:* EPREL, the EU energy-label product database (state service) — It is the public register the repair rules point at, but nobody checks the records, so a missing repair link currently costs a manufacturer nothing.
+
+*Why now:* iFixit reviewed 2,334 records and found only about 18% lead to spare parts. The obligation is a year old and unenforced because nobody checks at scale. The data is already public and the rules are a checklist, so this is a scraper and a table that manufactures enforcement pressure out of existing law.
+
+*Scores:* reward 3 · disruption 3 · effort 2 · demand 2 · moat risk 1
+
+*Evidence:* [2026-09-10](https://www.ifixit.com/News/119217/one-year-into-eu-ecodesign-rules-80-of-smartphones-lack-repair-info) · [2026-07-31](https://news.ycombinator.com/item?id=49126652)
+
+<sub>first seen 2026-09-13 · last scored 2026-09-13 · rubric v1</sub>
+
 ### lan-telemetry-observatory
 
-**1. Per-device telemetry watch for smart TVs and appliances** — xhit **5.43**
+**5. Per-device telemetry watch for smart TVs and appliances** — xhit **5.43**
 
 *What:* A passive LAN watcher that attributes every outbound flow to a named device, resolves who it talks to, and publishes a per-model telemetry profile other owners can diff against their own.
 
@@ -39,9 +110,59 @@ pseudo-monopolies.
 
 <sub>first seen 2026-09-12 · last scored 2026-09-12 · rubric v1</sub>
 
+### consent-banner-evidence-kit
+
+**6. Evidence kit for illegal cookie banners** — xhit **5.33**
+
+*What:* A browser extension that records what a banner actually did — requests fired before consent, pre-ticked vendors, reject buttons that do nothing — and exports a filled-in complaint for the regulator.
+
+*Target:* IAB TCF consent-management platforms (pseudo-monopoly) — A handful of vendors supply the banners on most of the web, so the same dark patterns repeat identically across every one of their installs.
+
+*Why now:* noyb files these by hand, one site at a time, and wins. A complaint needs a reproducible record of the violation, which is precisely what a browser can capture by itself. The Commission is proposing browser-level signals while the ad industry lobbies against them; evidence at scale is what settles that fight.
+
+*Scores:* reward 3 · disruption 3 · effort 2 · demand 4 · moat risk 2
+
+*Evidence:* [2026-09-10](https://noyb.eu/en/open-letter-civil-society-coalition-urges-eu-kill-cookie-banner) · [2026-09-10](https://lemmy.ml/post/52539308) · [2026-07-30](https://noyb.eu/en/1741-informed-consents-one-click-gdpr-complaint-against-dictcc-filed) · [2026-07-30](https://news.ycombinator.com/item?id=49106384)
+
+<sub>first seen 2026-09-13 · last scored 2026-09-13 · rubric v1</sub>
+
+### self-hosted-sar-engine
+
+**7. Self-hosted engine for GDPR access and erasure requests** — xhit **5.14**
+
+*What:* A self-hosted tool that generates, sends and tracks Article 15 and 17 requests against a maintained controller list, parses the replies, and keeps your identity documents on your own disk.
+
+*Target:* Data-broker removal subscriptions (Incogni, DeleteMe) (closed source) — They charge rent to send letters you already have the legal right to send, and they need your identity documents in their hands to send them.
+
+*Why now:* The right is free; exercising it a hundred times is not, which is the whole business model of the subscriptions. Someone did exactly that by hand this month and several companies deleted rather than disclose. Credit bureaus are simultaneously being sued over records they should have erased. The letters are formulaic, which is what makes this automatable.
+
+*Scores:* reward 4 · disruption 3 · effort 3 · demand 4 · moat risk 1
+
+*Evidence:* [2026-09-10](https://noyb.eu/en/schufa-insists-shadow-database-noyb-lawsuit-now-certain) · [2026-08-31](https://lemmy.world/post/51351060) · [2026-08-26](https://noyb.eu/en/shadow-database-scandal-noyb-sends-schufa-cease-and-desist-letter-interest-list-class-action) · [2026-08-15](https://feddit.org/post/34114036)
+
+<sub>first seen 2026-09-13 · last scored 2026-09-13 · rubric v1</sub>
+
+### open-age-verification-client
+
+**8. Open age-verification client for de-Googled and Linux devices** — xhit **4.17**
+
+*What:* A client implementing the EU age-verification spec's proofs on GrapheneOS, LineageOS and Linux phones, using device-held keys instead of Google or Apple attestation.
+
+*Target:* EU age-verification and eID wallet apps (state service) — The law mandates the check, not the vendor. Its own technical spec makes Play Integrity and App Attest the only accepted proof of a genuine device.
+
+*Why now:* Attestation is the choke point: obey the law and you must run one of two vendors' operating systems. California just exempted GPL, MIT, BSD and Apache software from its own age law, which is the opening an open client needs, and a citizens' initiative is already organising around device neutrality.
+
+*Scores:* reward 5 · disruption 5 · effort 4 · demand 5 · moat risk 4
+
+*Legal note:* Verifiers may refuse any client without vendor attestation, so shipping this probably means arguing device neutrality with a regulator as well as writing code. The California licence exemption is the strongest precedent to lean on.
+
+*Evidence:* [2026-09-07](https://edri.org/our-work/eu-age-verification-tool-does-not-solve-privacy-concerns/) · [2026-09-07](https://lemmy.ml/post/52400553) · [2026-08-30](https://lemmy.ml/post/52060560) · [2026-08-28](https://lemmy.ml/post/52003644) · [2026-08-19](https://chachara.club/post/1541945) · [2026-07-14](https://news.ycombinator.com/item?id=48903777)
+
+<sub>first seen 2026-09-13 · last scored 2026-09-13 · rubric v1</sub>
+
 ### play-store-exit-triage
 
-**2. Triage your Android apps before Google's sideload cutoff** — xhit **4.00**
+**9. Triage your Android apps before Google's sideload cutoff** — xhit **4.00**
 
 *What:* An on-device inventory that flags which installed apps depend on Play distribution, finds each one's F-Droid, Codeberg or GitHub release channel, and exports an Obtainium import file.
 
@@ -59,7 +180,7 @@ pseudo-monopolies.
 
 ### smartthings-exit-exporter
 
-**3. Escape hatch for SmartThings before the October API fee** — xhit **4.00**
+**10. Escape hatch for SmartThings before the October API fee** — xhit **4.00**
 
 *What:* A one-shot exporter that pulls rooms, devices, scenes and automations from the SmartThings API and writes Home Assistant YAML plus a Zigbee re-pairing plan for the hardware already on the wall.
 
@@ -77,7 +198,7 @@ pseudo-monopolies.
 
 ### appflowy-open-server
 
-**4. Community server for the last AGPL AppFlowy release** — xhit **2.33**
+**11. Community server for the last AGPL AppFlowy release** — xhit **2.33**
 
 *What:* A maintained fork of the archived AppFlowy server that keeps the collaboration, auth and storage endpoints working for the open clients, with no seat count and no commercial image in the path.
 

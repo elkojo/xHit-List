@@ -1,0 +1,55 @@
+slug: open-age-verification-client
+title: Open age-verification client for de-Googled and Linux devices
+status: live
+pinned: false
+target:
+  kind: state_service
+  name: EU age-verification and eID wallet apps
+  why_vulnerable: 'The law mandates the check, not the vendor. Its own technical spec makes
+    Play Integrity and App Attest the only accepted proof of a genuine device.
+
+    '
+what: 'A client implementing the EU age-verification spec''s proofs on GrapheneOS, LineageOS
+  and Linux phones, using device-held keys instead of Google or Apple attestation.
+
+  '
+rationale: 'Attestation is the choke point: obey the law and you must run one of two vendors''
+  operating systems. California just exempted GPL, MIT, BSD and Apache software from its own
+  age law, which is the opening an open client needs, and a citizens'' initiative is already
+  organising around device neutrality.
+
+  '
+scores:
+  reward: 5
+  disruption: 5
+  effort: 4
+  demand: 5
+  moat_risk: 4
+legal_note: 'Verifiers may refuse any client without vendor attestation, so shipping this
+  probably means arguing device neutrality with a regulator as well as writing code. The California
+  licence exemption is the strongest precedent to lean on.
+
+  '
+evidence:
+- url: https://news.ycombinator.com/item?id=48903777
+  date: '2026-07-14'
+  note: 584-point thread on the EU app forcing Android or iOS
+- url: https://chachara.club/post/1541945
+  date: '2026-08-19'
+  note: Citizens' initiative launched for device neutrality and open attestation
+- url: https://lemmy.ml/post/52003644
+  date: '2026-08-28'
+  note: European Citizens' Initiative against digital ID and age verification
+- url: https://lemmy.ml/post/52060560
+  date: '2026-08-30'
+  note: California exempts GPL, MIT, BSD and Apache software from its age law
+- url: https://edri.org/our-work/eu-age-verification-tool-does-not-solve-privacy-concerns/
+  date: '2026-09-07'
+  note: EDRi finds the shipped tool fails on privacy and on readiness
+- url: https://lemmy.ml/post/52400553
+  date: '2026-09-07'
+  note: ID-scanning vendor leaked a live feed of every scan for a year
+first_seen: '2026-09-13'
+last_scored: '2026-09-13'
+rubric_version: 1
+xhit: 4.17

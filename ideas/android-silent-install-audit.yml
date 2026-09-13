@@ -1,0 +1,39 @@
+slug: android-silent-install-audit
+title: Audit what Android installed on your phone without asking
+status: live
+pinned: false
+target:
+  kind: pseudo_monopoly
+  name: Google Play Services and system module updates
+  why_vulnerable: 'It installs and updates components outside the app store with no notice,
+    and some of what it delivers cannot be removed by the owner of the phone.
+
+    '
+what: 'An on-device tool that diffs installed packages and system modules over time, names
+  whatever arrived silently, shows its permissions and network peers, and says plainly whether
+  it can be removed.
+
+  '
+rationale: 'Google pushed an on-device nudity scanner to phones and then opened it to third
+  party apps; users found it days later and could not uninstall it. The install channel is
+  the story, not that one module. A diff over time turns a rumour thread into a record somebody
+  can act on.
+
+  '
+scores:
+  reward: 3
+  disruption: 3
+  effort: 2
+  demand: 3
+  moat_risk: 1
+evidence:
+- url: https://lemmy.ml/post/51457768
+  date: '2026-08-16'
+  note: 227-point thread; an app installed itself with no warning
+- url: https://lemmy.zip/post/70348981
+  date: '2026-08-26'
+  note: Nude-scanning module cannot be removed, now opened to app developers
+first_seen: '2026-09-13'
+last_scored: '2026-09-13'
+rubric_version: 1
+xhit: 6.0
