@@ -8,7 +8,7 @@ that stops the harvester re-proposing the same dead idea every week.
 An entry comes back to life if new evidence lifts its score above the
 current rank-30 cutoff.
 
-`0 buried` · updated 2026-09-12
+`0 buried` · updated 2026-09-13
 
 | idea | xhit | target | evicted | why |
 |---|---:|---|---|---|

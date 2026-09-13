@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Render ideas/*.yml into HITLIST.md, GRAVEYARD.md and SHIPPED.md.
+"""Render ideas/*.yml into HITLIST.md, GRAVEYARD.md, SHIPPED.md and SOURCES.md.
 
-This script owns three things and nothing else:
+This script owns four things and nothing else:
   1. computing `xhit` from `scores` (the formula lives here, once)
   2. enforcing the 30-entry cap and writing evictions back to the idea files
-  3. generating the markdown
+  3. enforcing the source cap and reporting each source's health
+  4. generating the markdown
 
 No model calls, no network, no judgment. Deterministic: running it twice in a row
 produces identical output. `--check` makes it read-only, which is how validate.py
@@ -17,7 +18,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
+import urllib.parse
 from datetime import date, datetime
 from pathlib import Path
 
@@ -26,6 +29,8 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 IDEAS = ROOT / "ideas"
 RUBRIC = ROOT / "rubric" / "SCORING.md"
+SOURCES = ROOT / "harvest" / "sources.yml"
+HEALTH = ROOT / "harvest" / "source_health.json"
 
 MAX_LIVE = 30
 
@@ -285,6 +290,190 @@ def render_shipped(building: list[dict], shipped: list[dict], today: str) -> str
     return "\n".join(lines).rstrip() + "\n"
 
 
+# --------------------------------------------------------------------- sources
+
+# How many consecutive bad runs before a source is called out. Crossing a line
+# does not retire anything: it puts the source in front of a human who decides.
+FAILING_AFTER = 3
+DRY_AFTER = 6
+RETIRE_AFTER = 8
+
+
+def source_link(src: dict) -> str:
+    """Where a human goes to look at this source with their own eyes.
+
+    Derived, never stored: a URL written next to the params it is built from is a
+    URL that goes stale the first time somebody edits one and not the other.
+    """
+    c = src["collector"]
+    if c == "rss":
+        return src["url"]
+    if c == "discourse":
+        return f"https://{src['host']}"
+    if c == "lemmy":
+        return f"https://{src['instance']}/c/{src['community']}"
+    if c == "hn_algolia":
+        q = urllib.parse.quote(src.get("query") or "")
+        tags = src.get("tags") or "story"
+        return f"https://hn.algolia.com/?query={q}&tags={tags}&sort=byDate"
+    if c == "stackexchange":
+        return f"https://{src['site']}.stackexchange.com"
+    if c == "github_search":
+        q = urllib.parse.quote(src["query"])
+        return f"https://github.com/search?q={q}&type=repositories"
+    if c == "lobsters":
+        return "https://lobste.rs"
+    if c == "killedbygoogle":
+        return "https://killedbygoogle.com"
+    return ""
+
+
+def source_filter(src: dict, default_window: int) -> str:
+    """The one-line answer to "what does this actually pull?"."""
+    c = src["collector"]
+    window = src.get("window_days", default_window)
+    if c == "hn_algolia":
+        what = f'"{src["query"]}"' if src.get("query") else src.get("tags", "story")
+        return f"{what} · ≥{src.get('min_points', 0)} pts · {window}d"
+    if c == "lemmy":
+        return f"{src.get('sort', 'TopWeek')} · ≥{src.get('min_score', 0)}"
+    if c == "discourse":
+        return f"top/{src.get('period', 'weekly')} · ≥{src.get('min_likes', 0)} likes"
+    if c == "stackexchange":
+        kind = "unanswered" if src.get("unanswered") else "questions"
+        return f"{kind} by {src.get('sort', 'votes')} · ≥{src.get('min_score', 0)}"
+    if c == "github_search":
+        return f"`{src['query']}` by {src.get('sort', 'stars')}"
+    if c == "killedbygoogle":
+        return f"closed within {src.get('closed_within_days', 365)}d"
+    if c == "lobsters":
+        return f"hottest · ≥{src.get('min_score', 0)}"
+    return f"{window}d window"
+
+
+def source_health(rec: dict | None) -> tuple[str, str]:
+    """(status, detail). Deterministic: thresholds only, no judgment."""
+    if not rec:
+        return "new", "not harvested yet"
+    fails = rec.get("consecutive_failures", 0)
+    dry = rec.get("consecutive_dry", 0)
+    items = rec.get("last_items", 0)
+    if fails >= RETIRE_AFTER or dry >= RETIRE_AFTER + DRY_AFTER:
+        return "retire?", f"{fails} failed / {dry} dry runs in a row"
+    if fails >= FAILING_AFTER:
+        return "failing", (rec.get("last_error") or "")[:60] or f"{fails} in a row"
+    if fails:
+        return "warn", (rec.get("last_error") or "")[:60] or "1 failed run"
+    if dry >= DRY_AFTER:
+        return "dry", f"{dry} runs with nothing"
+    return "ok", f"{items} items"
+
+
+def load_sources() -> tuple[dict, list[dict], list[dict]]:
+    spec = iso_dates(yaml.safe_load(SOURCES.read_text()))
+    return spec.get("defaults", {}), spec.get("sources") or [], spec.get("retired") or []
+
+
+def load_health() -> dict:
+    if not HEALTH.exists():
+        return {}
+    return json.loads(HEALTH.read_text()).get("sources", {})
+
+
+def render_sources(
+    defaults: dict, sources: list[dict], retired: list[dict], health: dict, today: str
+) -> str:
+    cap = defaults.get("max_sources", 100)
+    window = defaults.get("window_days", 14)
+    groups: dict[str, list[dict]] = {}
+    for src in sources:
+        groups.setdefault(src.get("group", "—"), []).append(src)
+
+    over = len(sources) - cap
+    lines = [
+        "# Sources",
+        "",
+        "<!-- GENERATED by harvest/render.py — do not edit. "
+        "Edit harvest/sources.yml. -->",
+        "",
+        f"Every place `harvest.py` looks for candidates, capped at {cap}. Past the",
+        "cap a new source has to displace a worse one: move the loser to the",
+        "[retired](#retired) table with a reason, so nobody re-adds it next month.",
+        "",
+        f"`{len(sources)}/{cap} active` · `{len(retired)} retired` · updated {today}",
+        "",
+    ]
+    if over > 0:
+        lines += [
+            f"> ⚠️ **{over} over the cap.** Retire {over} before adding another.",
+            "",
+        ]
+
+    lines += [
+        "| group | what it means | sources |",
+        "|---|---|---:|",
+        "| `enshittification` | an incumbent closing a door — the highest-yield "
+        "signal there is | %d |" % len(groups.get("enshittification", [])),
+        "| `mandate` | a rule that forces an interface open | %d |"
+        % len(groups.get("mandate", [])),
+        "| `pain` | someone saying a dependency hurts | %d |"
+        % len(groups.get("pain", [])),
+        "| `vacancy` | a solved problem whose solution died | %d |"
+        % len(groups.get("vacancy", [])),
+        "",
+        "Health is counted by `harvest.py` and written to `source_health.json`: "
+        f"`warn` is one failed run, `failing` is {FAILING_AFTER} in a row, `dry` is "
+        f"{DRY_AFTER} runs that returned nothing, `retire?` means stop carrying it.",
+        "",
+        "---",
+        "",
+    ]
+
+    for group in ("enshittification", "mandate", "pain", "vacancy"):
+        rows = sorted(groups.get(group, []), key=lambda s: s["id"])
+        if not rows:
+            continue
+        lines += [
+            f"## {group} <sub>{len(rows)}</sub>",
+            "",
+            "| source | via | fetches | added | health |",
+            "|---|---|---|---|---|",
+        ]
+        for src in rows:
+            status, detail = source_health(health.get(src["id"]))
+            link = source_link(src)
+            name = f"[{src['id']}]({link})" if link else src["id"]
+            note = f"<br><sub>{src['note']}</sub>" if src.get("note") else ""
+            lines.append(
+                f"| {name}{note} | `{src['collector']}` "
+                f"| {source_filter(src, window)} "
+                f"| {src.get('added', '—')} "
+                f"| `{status}` <sub>{detail}</sub> |"
+            )
+        lines.append("")
+
+    lines += [
+        "---",
+        "",
+        "## Retired",
+        "",
+        "Tried, found wanting, and kept here on purpose — this is the dedupe ledger",
+        "for sources, the same way GRAVEYARD.md is the one for ideas.",
+        "",
+        "| source | where | retired | why |",
+        "|---|---|---|---|",
+    ]
+    for src in sorted(retired, key=lambda s: (str(s.get("retired_on", "")), s["id"])):
+        where = src.get("where", "")
+        where_md = f"<{where}>" if str(where).startswith("http") else where
+        lines.append(
+            f"| {src['id']} | {where_md} "
+            f"| {src.get('retired_on', '—')} | {src.get('why', '—')} |"
+        )
+    lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 # -------------------------------------------------------------------------- main
 
 
@@ -315,10 +504,14 @@ def main() -> int:
     building = [i for i in ideas if i["status"] == "building"]
     shipped = [i for i in ideas if i["status"] == "shipped"]
 
+    defaults, sources, retired = load_sources()
+    health = load_health()
+
     targets = {
         ROOT / "HITLIST.md": render_hitlist(live, today, rv),
         ROOT / "GRAVEYARD.md": render_graveyard(dead, today),
         ROOT / "SHIPPED.md": render_shipped(building, shipped, today),
+        ROOT / "SOURCES.md": render_sources(defaults, sources, retired, health, today),
     }
 
     if args.check:
@@ -344,10 +537,18 @@ def main() -> int:
         path.write_text(text, encoding="utf-8")
         print(f"wrote {path.name}")
 
+    cap = defaults.get("max_sources", 100)
     print(
         f"{len(live)} live · {len(dead)} buried · "
-        f"{len(building)} building · {len(shipped)} shipped"
+        f"{len(building)} building · {len(shipped)} shipped · "
+        f"{len(sources)}/{cap} sources"
     )
+    if len(sources) > cap:
+        print(
+            f"note: {len(sources) - cap} source(s) over the cap — "
+            "retire one in harvest/sources.yml",
+            file=sys.stderr,
+        )
     return 0
 
 

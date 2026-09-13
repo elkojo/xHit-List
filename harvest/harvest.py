@@ -30,6 +30,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCES = ROOT / "harvest" / "sources.yml"
+HEALTH = ROOT / "harvest" / "source_health.json"
 CANDIDATES = ROOT / "candidates"
 
 TIMEOUT = 30
@@ -80,8 +81,46 @@ def fetch_text(url: str, user_agent: str) -> str | None:
         return None
 
 
+# Every warning raised while one source is being fetched. main() clears it before
+# each source and reads it after, which is how a fetch that failed is told apart
+# from one that simply had nothing new -- the two look identical from the outside
+# and only one of them means the source is dying.
+_WARNINGS: list[str] = []
+
+
 def warn(msg: str) -> None:
+    _WARNINGS.append(msg)
     print(f"  ! {msg}", file=sys.stderr)
+
+
+# ------------------------------------------------------------------ source health
+
+
+def load_health() -> dict:
+    if not HEALTH.exists():
+        return {}
+    try:
+        return json.loads(HEALTH.read_text()).get("sources", {})
+    except (json.JSONDecodeError, OSError):
+        warn("source_health.json unreadable; starting a fresh record")
+        return {}
+
+
+def record(health: dict, source_id: str, today: str, items: int, errors: list[str]) -> None:
+    """Bookkeeping only. Deciding that a source has earned retirement is a
+    judgment call and belongs to a human reading SOURCES.md, not to this file."""
+    prev = health.get(source_id, {})
+    failed = bool(errors)
+    health[source_id] = {
+        "last_run": today,
+        "last_ok": prev.get("last_ok") if failed else today,
+        "last_items": items,
+        "runs": prev.get("runs", 0) + 1,
+        "failed_runs": prev.get("failed_runs", 0) + (1 if failed else 0),
+        "consecutive_failures": (prev.get("consecutive_failures", 0) + 1) if failed else 0,
+        "consecutive_dry": (prev.get("consecutive_dry", 0) + 1) if items == 0 else 0,
+        "last_error": errors[-1][:200] if errors else "",
+    }
 
 
 # ---------------------------------------------------------------- normalised item
@@ -446,6 +485,12 @@ def main() -> int:
 
     seen_urls: set[str] = set()
     rows: list[dict] = []
+    today = date.today().isoformat()
+    health = load_health()
+
+    cap = cfg.get("max_sources")
+    if cap and len(spec["sources"]) > cap:
+        warn(f"{len(spec['sources'])} sources exceeds the cap of {cap} — retire one")
 
     for src in spec["sources"]:
         if wanted and src.get("group") not in wanted:
@@ -456,15 +501,17 @@ def main() -> int:
             continue
 
         print(f"- {src['id']} ({src['group']})")
+        _WARNINGS.clear()
         try:
             found = collector(src, cfg)
         except Exception as exc:  # noqa: BLE001
             warn(f"{src['id']} raised {type(exc).__name__}: {exc}")
-            continue
+            found = []
 
         fresh = [r for r in found if r["url"] and r["url"] not in seen_urls]
         seen_urls.update(r["url"] for r in fresh)
         rows.extend(fresh)
+        record(health, src["id"], today, len(found), list(_WARNINGS))
         print(f"    {len(fresh)} new ({len(found)} fetched)")
         time.sleep(1)  # be a good citizen
 
@@ -473,6 +520,24 @@ def main() -> int:
     if args.dry_run:
         print("(dry run, nothing written)")
         return 0
+
+    if not wanted:
+        # A full run is the only run that can speak for every source; a --group run
+        # must not silently drop the health record of the ones it skipped.
+        known = {s["id"] for s in spec["sources"]} | {
+            r["id"] for r in spec.get("retired") or []
+        }
+        health = {k: v for k, v in health.items() if k in known}
+    HEALTH.write_text(
+        json.dumps(
+            {"generated": today, "sources": dict(sorted(health.items()))},
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    print(f"health -> {HEALTH.relative_to(ROOT)}")
 
     CANDIDATES.mkdir(exist_ok=True)
     out = CANDIDATES / f"{date.today().isoformat()}.jsonl"

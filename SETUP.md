@@ -8,14 +8,16 @@ Pick up here.
 
 ---
 
-## 0. Where this stands (2026-09-12)
+## 0. Where this stands (2026-09-13)
 
-Four commits exist. `main` holds the scaffold plus one harvest-audit commit; the
-work from the 2026-09-12 session sits on branch **`harvest/live-sources`**, unpushed
-because there is still no remote:
+`main` holds the scaffold plus one harvest-audit commit; the work from the
+2026-09-12 and 2026-09-13 sessions sits on branch **`harvest/live-sources`**,
+unpushed because there is still no remote:
 
 ```
-212d7c6  harvest: +4 ideas, 0 evicted, 0 rescored        (branch)
+(2026-09-13) sources: 100-source registry + SOURCES.md     (branch)
+c688900  docs(setup): record session state                 (branch)
+212d7c6  harvest: +4 ideas, 0 evicted, 0 rescored          (branch)
 ea6e46b  harvest: normalise YAML-native dates on load     (branch)
 e49384f  harvest: replace dead sources, add five collectors, fix ordering  (branch)
 a7318fb  harvest: 70 candidates, 0 ideas, 0 rescored      (main)
@@ -120,9 +122,10 @@ to look at, in the order they usually go wrong:
   heuristic is deliberately noisy. Loosen `DUP_RATIO` once you see what real
   titles look like.
 - **Source yield.** After a week, check which `sources.yml` entries ever produced an
-  accepted idea. Drop the dead ones; the `enshittification` and `mandate` groups
-  should earn their keep disproportionately. One pass of this was already done on
-  2026-09-12 — see the notes below.
+  accepted idea. `SOURCES.md` now shows each one's failing and dry streaks, so this
+  is a matter of reading the health column — but a source that answers every day and
+  has never produced an entry is the one to cut, and only the ideas tell you that.
+  Retire it into `retired:` with a reason; never just delete the entry.
 
 ---
 
@@ -135,8 +138,12 @@ Done and tested on poppy, so you do not need to re-check it:
 - the 30-entry cap evicts the weakest unpinned entries and writes a reason
 - a `pinned: true` entry survives eviction with the worst possible score
 - `validate.py` catches schema violations, slug/filename mismatches and cap breaches
-- every source in `sources.yml` was probed live on 2026-09-12 and answered: 425
-  candidates, no warnings, all four groups populated
+- every source in `sources.yml` was probed live before being added, and the full
+  100-source list was run end to end on 2026-09-13: **1571 candidates, 98/100 sources
+  healthy**, all four groups populated
+- `render.py` generates `SOURCES.md` from `sources.yml` + `source_health.json`, and
+  `validate.py` fails on a duplicate source id, an unknown collector, a collector
+  missing a required param, a retirement with no reason, or a 101st source
 
 ## Source notes from the 2026-09-12 rebuild
 
@@ -157,6 +164,29 @@ Done and tested on poppy, so you do not need to re-check it:
 - **`softwarerecs` unanswered questions are the densest signal in the file** — a
   stated need with no product behind it — but the site is quiet, so recent entries
   score 0–1. That is expected; do not raise `min_score` on it.
+
+## Source notes from the 2026-09-13 import
+
+- **The list is capped at 100 and `SOURCES.md` is generated** — see CLAUDE.md §13.
+  Removing a source means moving it to `retired:` in `sources.yml`, never deleting
+  the entry. The 2026-09-12 session dropped the OpenStreetMap forum and `se-opendata`
+  with good reasons, but had nowhere to write them down, so this session re-proposed
+  both. They are now in `retired:` and cannot come back by accident.
+- **The RSS import.** `harvest/rssguard_feeds_2026-06-30.opml` holds 41 feeds. Nine
+  were in charter and kept; nine are consumer-tech and pop-science; 22 are sport,
+  travel, humour and general news. All 32 rejects are in `retired:` as two bucket
+  entries so the same OPML never has to be triaged twice.
+- **A feed that answers a probe can still be gated.** `theregister.com` served 50
+  items to the probe and a proof-of-work "are we human" interstitial to the harvest
+  an hour later. Replaced with `netzpolitik.org`. When a source starts failing,
+  fetch it by hand before assuming the harvester broke.
+- **`score.py --limit` had to rise to 120.** The round-robin takes one item per
+  source before a second from any, so a 60-item batch across 100 sources could never
+  reach the tail of the file. The bucket order now also rotates with the date, so no
+  source can sit permanently below the cut.
+- **Feeds carry no engagement number at all.** 38 of the 100 sources (37 RSS plus
+  Killed by Google) now score 0 on every item, which makes `score.py`'s round-robin
+  load-bearing rather than a nicety — a flat sort would bury every one of them.
 
 ## Known environment notes
 
