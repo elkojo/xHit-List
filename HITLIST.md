@@ -6,7 +6,7 @@ Top 30 projects worth building, ranked by reward against effort and
 weighted toward breaking closed source, state service monopolies and
 pseudo-monopolies.
 
-`11/30 live` · `rubric v1` · updated 2026-09-20
+`11/30 live` · `rubric v1` · updated 2026-09-21
 
 | # | idea | xhit | target | R | D | E | Dm | M | evidence |
 |---:|---|---:|---|:-:|:-:|:-:|:-:|:-:|---|
