@@ -5,7 +5,7 @@
 Ideas that left the list because someone started on them. They free a slot
 the moment they move here — the hit list is for work not yet begun.
 
-updated 2026-09-21
+updated 2026-09-22
 
 ## In progress
 
