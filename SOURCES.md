@@ -6,7 +6,7 @@ Every place `harvest.py` looks for candidates, capped at 100. Past the
 cap a new source has to displace a worse one: move the loser to the
 [retired](#retired) table with a reason, so nobody re-adds it next month.
 
-`100/100 active` · `17 retired` · updated 2026-10-09
+`100/100 active` · `17 retired` · updated 2026-10-10
 
 | group | what it means | sources |
 |---|---|---:|
@@ -24,19 +24,19 @@ Health is counted by `harvest.py` and written to `source_health.json`: `warn` is
 | source | via | fetches | added | health |
 |---|---|---|---|---|
 | [404media](https://www.404media.co/rss/) | `rss` | 14d window | 2026-09-13 | `ok` <sub>15 items</sub> |
-| [9to5google](https://9to5google.com/feed/)<br><sub>Google product changes, ahead of the official post</sub> | `rss` | 7d window | 2026-09-13 | `ok` <sub>89 items</sub> |
+| [9to5google](https://9to5google.com/feed/)<br><sub>Google product changes, ahead of the official post</sub> | `rss` | 7d window | 2026-09-13 | `ok` <sub>84 items</sub> |
 | [arstechnica](https://feeds.arstechnica.com/arstechnica/index) | `rss` | 7d window | 2026-09-13 | `ok` <sub>20 items</sub> |
-| [aws-whats-new](https://aws.amazon.com/about-aws/whats-new/recent/feed/)<br><sub>high volume; the end-of-support notices are the point</sub> | `rss` | 7d window | 2026-09-13 | `ok` <sub>34 items</sub> |
+| [aws-whats-new](https://aws.amazon.com/about-aws/whats-new/recent/feed/)<br><sub>high volume; the end-of-support notices are the point</sub> | `rss` | 7d window | 2026-09-13 | `ok` <sub>36 items</sub> |
 | [cloudflare-blog](https://blog.cloudflare.com/rss/) | `rss` | 21d window | 2026-09-13 | `ok` <sub>20 items</sub> |
 | [github-changelog](https://github.blog/changelog/feed/)<br><sub>ships deprecations and forced migrations first</sub> | `rss` | 14d window | 2026-09-13 | `ok` <sub>10 items</sub> |
 | [google-workspace-updates](https://workspaceupdates.googleblog.com/atom.xml)<br><sub>every Workspace change, including the removals</sub> | `rss` | 14d window | 2026-09-13 | `ok` <sub>16 items</sub> |
-| [hn-deprecated-api](https://hn.algolia.com/?query=deprecating%20API&tags=story&sort=byDate) | `hn_algolia` | "deprecating API" · ≥20 pts · 14d | 2026-09-12 | `retire?` <sub>0 failed / 28 dry runs in a row</sub> |
-| [hn-end-of-life](https://hn.algolia.com/?query=end%20of%20life&tags=story&sort=byDate) | `hn_algolia` | "end of life" · ≥30 pts · 60d | 2026-09-13 | `ok` <sub>38 items</sub> |
+| [hn-deprecated-api](https://hn.algolia.com/?query=deprecating%20API&tags=story&sort=byDate) | `hn_algolia` | "deprecating API" · ≥20 pts · 14d | 2026-09-12 | `retire?` <sub>0 failed / 29 dry runs in a row</sub> |
+| [hn-end-of-life](https://hn.algolia.com/?query=end%20of%20life&tags=story&sort=byDate) | `hn_algolia` | "end of life" · ≥30 pts · 60d | 2026-09-13 | `ok` <sub>29 items</sub> |
 | [hn-enshittification](https://hn.algolia.com/?query=enshittification&tags=story&sort=byDate) | `hn_algolia` | "enshittification" · ≥15 pts · 14d | 2026-09-12 | `ok` <sub>2 items</sub> |
 | [hn-price-increase](https://hn.algolia.com/?query=price%20increase&tags=story&sort=byDate) | `hn_algolia` | "price increase" · ≥25 pts · 14d | 2026-09-12 | `ok` <sub>1 items</sub> |
 | [hn-relicensing](https://hn.algolia.com/?query=license%20change&tags=story&sort=byDate) | `hn_algolia` | "license change" · ≥20 pts · 14d | 2026-09-12 | `ok` <sub>0 items</sub> |
 | [hn-rug-pull](https://hn.algolia.com/?query=rug%20pull&tags=story&sort=byDate) | `hn_algolia` | "rug pull" · ≥15 pts · 90d | 2026-09-13 | `ok` <sub>7 items</sub> |
-| [hn-shutting-down](https://hn.algolia.com/?query=shutting%20down&tags=story&sort=byDate) | `hn_algolia` | "shutting down" · ≥30 pts · 14d | 2026-09-12 | `ok` <sub>3 items</sub> |
+| [hn-shutting-down](https://hn.algolia.com/?query=shutting%20down&tags=story&sort=byDate) | `hn_algolia` | "shutting down" · ≥30 pts · 14d | 2026-09-12 | `ok` <sub>2 items</sub> |
 | [hn-telemetry](https://hn.algolia.com/?query=telemetry&tags=story&sort=byDate) | `hn_algolia` | "telemetry" · ≥25 pts · 60d | 2026-09-13 | `ok` <sub>8 items</sub> |
 | [hn-vendor-lockin](https://hn.algolia.com/?query=vendor%20lock-in&tags=story&sort=byDate) | `hn_algolia` | "vendor lock-in" · ≥20 pts · 90d | 2026-09-13 | `ok` <sub>2 items</sub> |
 | [home-assistant-blog](https://www.home-assistant.io/atom.xml)<br><sub>names the clouds that shut their local APIs</sub> | `rss` | 30d window | 2026-09-13 | `ok` <sub>2 items</sub> |
@@ -54,7 +54,7 @@ Health is counted by `harvest.py` and written to `source_health.json`: `warn` is
 |---|---|---|---|---|
 | [cma-uk](https://www.gov.uk/government/organisations/competition-and-markets-authority.atom)<br><sub>UK competition remedies, often interoperability orders</sub> | `rss` | 45d window | 2026-09-13 | `ok` <sub>20 items</sub> |
 | [edri](https://edri.org/feed/)<br><sub>EU digital rights; tracks mandates while they are drafted</sub> | `rss` | 60d window | 2026-09-13 | `ok` <sub>16 items</sub> |
-| [eff-updates](https://www.eff.org/rss/updates.xml) | `rss` | 21d window | 2026-09-13 | `ok` <sub>23 items</sub> |
+| [eff-updates](https://www.eff.org/rss/updates.xml) | `rss` | 21d window | 2026-09-13 | `ok` <sub>22 items</sub> |
 | [eu-digital-strategy](https://digital-strategy.ec.europa.eu/en/rss.xml) | `rss` | 45d window | 2026-09-12 | `ok` <sub>9 items</sub> |
 | [hn-antitrust](https://hn.algolia.com/?query=antitrust&tags=story&sort=byDate) | `hn_algolia` | "antitrust" · ≥25 pts · 90d | 2026-09-12 | `ok` <sub>5 items</sub> |
 | [hn-digital-identity](https://hn.algolia.com/?query=digital%20identity&tags=story&sort=byDate) | `hn_algolia` | "digital identity" · ≥10 pts · 90d | 2026-09-13 | `ok` <sub>1 items</sub> |
@@ -63,8 +63,8 @@ Health is counted by `harvest.py` and written to `source_health.json`: `warn` is
 | [hn-gdpr](https://hn.algolia.com/?query=GDPR&tags=story&sort=byDate) | `hn_algolia` | "GDPR" · ≥25 pts · 90d | 2026-09-13 | `ok` <sub>11 items</sub> |
 | [hn-government-software](https://hn.algolia.com/?query=government%20software&tags=story&sort=byDate) | `hn_algolia` | "government software" · ≥10 pts · 90d | 2026-09-13 | `ok` <sub>1 items</sub> |
 | [hn-interoperability](https://hn.algolia.com/?query=interoperability&tags=story&sort=byDate) | `hn_algolia` | "interoperability" · ≥20 pts · 90d | 2026-09-12 | `ok` <sub>2 items</sub> |
-| [hn-open-standard](https://hn.algolia.com/?query=open%20standard&tags=story&sort=byDate) | `hn_algolia` | "open standard" · ≥20 pts · 90d | 2026-09-13 | `ok` <sub>14 items</sub> |
-| [hn-right-to-repair](https://hn.algolia.com/?query=right%20to%20repair&tags=story&sort=byDate) | `hn_algolia` | "right to repair" · ≥40 pts · 90d | 2026-09-12 | `ok` <sub>4 items</sub> |
+| [hn-open-standard](https://hn.algolia.com/?query=open%20standard&tags=story&sort=byDate) | `hn_algolia` | "open standard" · ≥20 pts · 90d | 2026-09-13 | `ok` <sub>13 items</sub> |
+| [hn-right-to-repair](https://hn.algolia.com/?query=right%20to%20repair&tags=story&sort=byDate) | `hn_algolia` | "right to repair" · ≥40 pts · 90d | 2026-09-12 | `ok` <sub>3 items</sub> |
 | [ifixit-news](https://www.ifixit.com/News/rss)<br><sub>right-to-repair rules and who is ignoring them</sub> | `rss` | 45d window | 2026-09-13 | `ok` <sub>9 items</sub> |
 | [noyb](https://noyb.eu/en/rss.xml)<br><sub>GDPR enforcement; each win forces an interface open</sub> | `rss` | 60d window | 2026-09-13 | `ok` <sub>5 items</sub> |
 | [openrightsgroup](https://www.openrightsgroup.org/feed/) | `rss` | 60d window | 2026-09-13 | `ok` <sub>9 items</sub> |
@@ -79,38 +79,38 @@ Health is counted by `harvest.py` and written to `source_health.json`: `warn` is
 | [discourse-fdroid](https://forum.f-droid.org) | `discourse` | top/monthly · ≥5 likes | 2026-09-12 | `ok` <sub>6 items</sub> |
 | [discourse-framework](https://community.frame.work) | `discourse` | top/monthly · ≥15 likes | 2026-09-12 | `ok` <sub>8 items</sub> |
 | [discourse-gnome](https://discourse.gnome.org) | `discourse` | top/monthly · ≥10 likes | 2026-09-13 | `ok` <sub>6 items</sub> |
-| [discourse-home-assistant](https://community.home-assistant.io) | `discourse` | top/weekly · ≥10 likes | 2026-09-12 | `ok` <sub>5 items</sub> |
-| [discourse-kde](https://discuss.kde.org) | `discourse` | top/monthly · ≥10 likes | 2026-09-13 | `ok` <sub>14 items</sub> |
-| [discourse-level1techs](https://forum.level1techs.com) | `discourse` | top/weekly · ≥10 likes | 2026-09-13 | `ok` <sub>6 items</sub> |
+| [discourse-home-assistant](https://community.home-assistant.io) | `discourse` | top/weekly · ≥10 likes | 2026-09-12 | `ok` <sub>4 items</sub> |
+| [discourse-kde](https://discuss.kde.org) | `discourse` | top/monthly · ≥10 likes | 2026-09-13 | `ok` <sub>15 items</sub> |
+| [discourse-level1techs](https://forum.level1techs.com) | `discourse` | top/weekly · ≥10 likes | 2026-09-13 | `ok` <sub>8 items</sub> |
 | [discourse-nextcloud](https://help.nextcloud.com)<br><sub>the self-hosted replacement hitting the platform's edges</sub> | `discourse` | top/monthly · ≥5 likes | 2026-09-13 | `ok` <sub>13 items</sub> |
-| [discourse-nixos](https://discourse.nixos.org) | `discourse` | top/monthly · ≥10 likes | 2026-09-13 | `ok` <sub>29 items</sub> |
+| [discourse-nixos](https://discourse.nixos.org) | `discourse` | top/monthly · ≥10 likes | 2026-09-13 | `ok` <sub>28 items</sub> |
 | [discourse-obsidian](https://forum.obsidian.md)<br><sub>a closed app's own users listing what they cannot have</sub> | `discourse` | top/monthly · ≥10 likes | 2026-09-13 | `ok` <sub>3 items</sub> |
-| [discourse-openhab](https://community.openhab.org)<br><sub>devices whose vendor cloud went away</sub> | `discourse` | top/monthly · ≥5 likes | 2026-09-13 | `ok` <sub>11 items</sub> |
-| [discourse-openwrt](https://forum.openwrt.org) | `discourse` | top/weekly · ≥10 likes | 2026-09-12 | `ok` <sub>5 items</sub> |
+| [discourse-openhab](https://community.openhab.org)<br><sub>devices whose vendor cloud went away</sub> | `discourse` | top/monthly · ≥5 likes | 2026-09-13 | `ok` <sub>12 items</sub> |
+| [discourse-openwrt](https://forum.openwrt.org) | `discourse` | top/weekly · ≥10 likes | 2026-09-12 | `ok` <sub>4 items</sub> |
 | [discourse-privacyguides](https://discuss.privacyguides.net) | `discourse` | top/monthly · ≥10 likes | 2026-09-12 | `ok` <sub>43 items</sub> |
-| [discourse-python](https://discuss.python.org) | `discourse` | top/monthly · ≥15 likes | 2026-09-13 | `ok` <sub>31 items</sub> |
-| [discourse-qubes](https://forum.qubes-os.org) | `discourse` | top/monthly · ≥5 likes | 2026-09-13 | `ok` <sub>41 items</sub> |
-| [discourse-signal](https://community.signalusers.org) | `discourse` | top/monthly · ≥10 likes | 2026-09-13 | `ok` <sub>8 items</sub> |
+| [discourse-python](https://discuss.python.org) | `discourse` | top/monthly · ≥15 likes | 2026-09-13 | `ok` <sub>32 items</sub> |
+| [discourse-qubes](https://forum.qubes-os.org) | `discourse` | top/monthly · ≥5 likes | 2026-09-13 | `ok` <sub>40 items</sub> |
+| [discourse-signal](https://community.signalusers.org) | `discourse` | top/monthly · ≥10 likes | 2026-09-13 | `ok` <sub>9 items</sub> |
 | [discourse-syncthing](https://forum.syncthing.net)<br><sub>low volume; the seat opposite iCloud and Dropbox</sub> | `discourse` | top/monthly · ≥3 likes | 2026-09-13 | `ok` <sub>9 items</sub> |
 | [discourse-ubuntu](https://discourse.ubuntu.com) | `discourse` | top/monthly · ≥10 likes | 2026-09-13 | `ok` <sub>33 items</sub> |
 | [discourse-yunohost](https://forum.yunohost.org) | `discourse` | top/monthly · ≥5 likes | 2026-09-13 | `ok` <sub>6 items</sub> |
 | [documentfoundation](https://blog.documentfoundation.org/feed/) | `rss` | 60d window | 2026-09-13 | `ok` <sub>10 items</sub> |
 | [fosspost](https://fosspost.org/feed/) | `rss` | 30d window | 2026-09-13 | `ok` <sub>10 items</sub> |
-| [hn-ask-hn](https://hn.algolia.com/?query=&tags=ask_hn&sort=byDate) | `hn_algolia` | ask_hn · ≥60 pts · 14d | 2026-09-12 | `ok` <sub>11 items</sub> |
+| [hn-ask-hn](https://hn.algolia.com/?query=&tags=ask_hn&sort=byDate) | `hn_algolia` | ask_hn · ≥60 pts · 14d | 2026-09-12 | `ok` <sub>9 items</sub> |
 | [hn-open-alternative](https://hn.algolia.com/?query=open%20source%20alternative&tags=story&sort=byDate) | `hn_algolia` | "open source alternative" · ≥15 pts · 14d | 2026-09-12 | `ok` <sub>7 items</sub> |
 | [hn-selfhosted](https://hn.algolia.com/?query=self-hosted&tags=story&sort=byDate) | `hn_algolia` | "self-hosted" · ≥15 pts · 14d | 2026-09-12 | `ok` <sub>3 items</sub> |
 | [itsfoss](https://feed.itsfoss.com/) | `rss` | 14d window | 2026-09-13 | `ok` <sub>15 items</sub> |
 | [lemmy-android](https://lemmy.world/c/android) | `lemmy` | TopMonth · ≥40 | 2026-09-13 | `ok` <sub>15 items</sub> |
 | [lemmy-degoogle](https://lemmy.ml/c/degoogle) | `lemmy` | TopMonth · ≥40 | 2026-09-12 | `ok` <sub>10 items</sub> |
 | [lemmy-fediverse](https://lemmy.ml/c/fediverse) | `lemmy` | TopMonth · ≥20 | 2026-09-13 | `ok` <sub>1 items</sub> |
-| [lemmy-linux](https://lemmy.ml/c/linux) | `lemmy` | TopWeek · ≥100 | 2026-09-12 | `ok` <sub>8 items</sub> |
-| [lemmy-opensource](https://lemmy.ml/c/opensource) | `lemmy` | TopMonth · ≥60 | 2026-09-12 | `ok` <sub>29 items</sub> |
-| [lemmy-opensource-pd](https://programming.dev/c/opensource) | `lemmy` | TopMonth · ≥40 | 2026-09-13 | `ok` <sub>18 items</sub> |
-| [lemmy-privacy](https://lemmy.ml/c/privacy) | `lemmy` | TopMonth · ≥60 | 2026-09-12 | `ok` <sub>50 items</sub> |
-| [lemmy-selfhosted](https://lemmy.world/c/selfhosted) | `lemmy` | TopWeek · ≥60 | 2026-09-12 | `ok` <sub>14 items</sub> |
-| [lemmy-technology](https://lemmy.world/c/technology) | `lemmy` | TopWeek · ≥300 | 2026-09-12 | `ok` <sub>33 items</sub> |
+| [lemmy-linux](https://lemmy.ml/c/linux) | `lemmy` | TopWeek · ≥100 | 2026-09-12 | `ok` <sub>9 items</sub> |
+| [lemmy-opensource](https://lemmy.ml/c/opensource) | `lemmy` | TopMonth · ≥60 | 2026-09-12 | `ok` <sub>27 items</sub> |
+| [lemmy-opensource-pd](https://programming.dev/c/opensource) | `lemmy` | TopMonth · ≥40 | 2026-09-13 | `ok` <sub>16 items</sub> |
+| [lemmy-privacy](https://lemmy.ml/c/privacy) | `lemmy` | TopMonth · ≥60 | 2026-09-12 | `ok` <sub>46 items</sub> |
+| [lemmy-selfhosted](https://lemmy.world/c/selfhosted) | `lemmy` | TopWeek · ≥60 | 2026-09-12 | `ok` <sub>15 items</sub> |
+| [lemmy-technology](https://lemmy.world/c/technology) | `lemmy` | TopWeek · ≥300 | 2026-09-12 | `ok` <sub>25 items</sub> |
 | [linuxiac](https://linuxiac.com/feed/) | `rss` | 14d window | 2026-09-13 | `ok` <sub>10 items</sub> |
-| [lobsters-hottest](https://lobste.rs) | `lobsters` | hottest · ≥15 | 2026-09-12 | `ok` <sub>16 items</sub> |
+| [lobsters-hottest](https://lobste.rs) | `lobsters` | hottest · ≥15 | 2026-09-12 | `ok` <sub>14 items</sub> |
 | [lupa-cz](https://www.lupa.cz/rss/clanky-samostatne/)<br><sub>Czech internet policy, telecom and e-government</sub> | `rss` | 14d window | 2026-09-13 | `ok` <sub>10 items</sub> |
 | [lwn](https://lwn.net/headlines/newrss) | `rss` | 14d window | 2026-09-13 | `ok` <sub>15 items</sub> |
 | [omgubuntu](https://www.omgubuntu.co.uk/feed) | `rss` | 14d window | 2026-09-13 | `ok` <sub>18 items</sub> |
@@ -131,12 +131,12 @@ Health is counted by `harvest.py` and written to `source_health.json`: `warn` is
 |---|---|---|---|---|
 | [gh-archived-large](https://github.com/search?q=archived%3Atrue%20stars%3A%3E2000%20pushed%3A%3E2025-01-01&type=repositories) | `github_search` | `archived:true stars:>2000 pushed:>2025-01-01` by updated | 2026-09-13 | `ok` <sub>40 items</sub> |
 | [gh-archived-privacy](https://github.com/search?q=archived%3Atrue%20topic%3Aprivacy%20stars%3A%3E200&type=repositories) | `github_search` | `archived:true topic:privacy stars:>200` by updated | 2026-09-13 | `ok` <sub>40 items</sub> |
-| [gh-fast-rising-foss](https://github.com/search?q=topic%3Aalternative%20stars%3A%3E150%20created%3A%3E2026-03-01&type=repositories) | `github_search` | `topic:alternative stars:>150 created:>2026-03-01` by stars | 2026-09-12 | `retire?` <sub>0 failed / 28 dry runs in a row</sub> |
+| [gh-fast-rising-foss](https://github.com/search?q=topic%3Aalternative%20stars%3A%3E150%20created%3A%3E2026-03-01&type=repositories) | `github_search` | `topic:alternative stars:>150 created:>2026-03-01` by stars | 2026-09-12 | `retire?` <sub>0 failed / 29 dry runs in a row</sub> |
 | [gh-interoperability](https://github.com/search?q=interoperability%20in%3Areadme%20stars%3A%3E300%20pushed%3A%3E2026-01-01&type=repositories) | `github_search` | `interoperability in:readme stars:>300 pushed:>2026-01-01` by stars | 2026-09-13 | `ok` <sub>40 items</sub> |
 | [gh-newly-archived](https://github.com/search?q=archived%3Atrue%20stars%3A%3E800%20pushed%3A%3E2025-06-01&type=repositories) | `github_search` | `archived:true stars:>800 pushed:>2025-06-01` by updated | 2026-09-12 | `ok` <sub>40 items</sub> |
 | [gh-open-data-tools](https://github.com/search?q=topic%3Aopen-data%20stars%3A%3E200%20pushed%3A%3E2026-01-01&type=repositories) | `github_search` | `topic:open-data stars:>200 pushed:>2026-01-01` by stars | 2026-09-13 | `ok` <sub>40 items</sub> |
 | [gh-stale-alternative](https://github.com/search?q=topic%3Aalternative%20stars%3A%3E400%20pushed%3A2024-01-01..2025-06-01&type=repositories) | `github_search` | `topic:alternative stars:>400 pushed:2024-01-01..2025-06-01` by updated | 2026-09-12 | `ok` <sub>1 items</sub> |
-| [gh-stale-selfhosted](https://github.com/search?q=stars%3A%3E1200%20topic%3Aself-hosted%20pushed%3A2024-01-01..2025-03-01&type=repositories) | `github_search` | `stars:>1200 topic:self-hosted pushed:2024-01-01..2025-03-01` by updated | 2026-09-12 | `ok` <sub>15 items</sub> |
+| [gh-stale-selfhosted](https://github.com/search?q=stars%3A%3E1200%20topic%3Aself-hosted%20pushed%3A2024-01-01..2025-03-01&type=repositories) | `github_search` | `stars:>1200 topic:self-hosted pushed:2024-01-01..2025-03-01` by updated | 2026-09-12 | `ok` <sub>14 items</sub> |
 | [hn-reverse-engineering](https://hn.algolia.com/?query=reverse%20engineering&tags=story&sort=byDate)<br><sub>someone already did the hard half of the work</sub> | `hn_algolia` | "reverse engineering" · ≥40 pts · 60d | 2026-09-13 | `ok` <sub>16 items</sub> |
 
 ---
